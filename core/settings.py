@@ -115,7 +115,7 @@ CORS_ALLOW_HEADERS = [
     'X-CSRFToken',
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'Ru-ru'
 
 TIME_ZONE = 'Asia/Tashkent'
 
