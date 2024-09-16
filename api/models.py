@@ -27,7 +27,7 @@ class Member(models.Model):
         # Если QR-код еще не был сгенерирован, создаём его
         if not self.qr_code:
             # Формат данных для QR-кода: member-{self.id}-ticket
-            qr_data = f"member-{self.id}-ticket"
+            qr_data = f"{self.id}"
             
             # Путь для сохранения QR-кода
             qr_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes', 'members')

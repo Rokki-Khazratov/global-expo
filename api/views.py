@@ -57,6 +57,7 @@ class CheckMemberAPIView(generics.GenericAPIView):
 
 
 
+
 class CheckQRCodeView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CheckQRCodeSerializer(data=request.data)
