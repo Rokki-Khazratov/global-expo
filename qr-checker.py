@@ -1,55 +1,63 @@
 import cv2
 import requests
-import time  # Importing time module for delay
+import time  # Импортируем модуль time для задержки
 
-# API manzili
+# Адрес API
 API_URL = 'http://127.0.0.1:8000/api/check-qr-code/'
 
-# Kamera yordamida QR-kodni olish funksiyasi
+# Специальные данные для VIP QR-кода
+VIP_QR_DATA = 'vip-&zpkJQ5m!k+K3cBu'
+
+# Функция для получения QR-кода с помощью камеры
 def read_qr_code():
-    cap = cv2.VideoCapture(0)  # Kamerani ishga tushirish
+    cap = cv2.VideoCapture(0)  # Запуск камеры
 
     while True:
-        ret, frame = cap.read()  # Kadrni olish
+        ret, frame = cap.read()  # Получение кадра с камеры
         if not ret:
-            print("Kamera ishga tushmadi")
+            print("Не удалось запустить камеру")
             break
 
-        # QR-kodni aniqlash va dekodlash
+        # Обнаружение и декодирование QR-кода
         detector = cv2.QRCodeDetector()
         data, bbox, _ = detector.detectAndDecode(frame)
 
         if data:
-            print(f"QR-kod ma'lumotlari: {data}")
-            send_data_to_api(data)  # QR-kodni APIga yuborish
-            time.sleep(3)  # 5 soniya kutish
+            print(f"Данные из QR-кода: {data}")
 
-        # QR-kod aniqlangan bo'lsa, tasvirni ko'rsatish
-        cv2.imshow('QR kodni o\'qish', frame)
+            # Проверка, является ли этот QR-код VIP-входом
+            if data == VIP_QR_DATA:
+                print("VIP вход обнаружен!")
+                # Можно добавить любую дополнительную логику для VIP
+            else:
+                send_data_to_api(data)  # Отправка данных QR-кода в API
 
-        # Agar "q" tugmasini bossangiz, dastur to'xtaydi
+            time.sleep(3)  # Задержка на 3 секунды
+
+        # Показ изображения, если QR-код найден
+        cv2.imshow('Сканирование QR-кода', frame)
+
+        # Если нажать "q", программа завершит работу
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    cap.release()
-    cv2.destroyAllWindows()
+    cap.release()  # Отключение камеры
+    cv2.destroyAllWindows()  # Закрытие всех окон OpenCV
 
-# API orqali ma'lumotni yuborish funksiyasi
+# Функция для отправки данных в API
 def send_data_to_api(qr_data):
     try:
-        # QR-koddan olingan ma'lumotni yuborish (bazaga id yuborilishi kerak)
+        # Отправка данных, полученных из QR-кода (ожидается ID в базе)
         response = requests.post(API_URL, json={"id": qr_data})
 
-        # API dan kelgan javobni tekshirish
+        # Проверка ответа от API
         if response.status_code == 200:
-            print("True")  # Foydalanuvchi mavjud
-        elif response.status_code == 404:
-            print("False")  # Foydalanuvchi mavjud emas
+            print("Вход разрешен!")
         else:
-            print(f"API xatosi: {response.status_code}")
+            print(f"Вход запрещен")
     except requests.exceptions.RequestException as e:
-        print(f"API bilan bog'lanishda xato yuz berdi: {e}")
+        print(f"Ошибка при соединении с API: {e}")
 
-# Dastur ishlashi
+# Основная логика программы
 if __name__ == "__main__":
-    read_qr_code()  # QR-kodni o'qish va uzluksiz ishlatish
+    read_qr_code()  # Запуск функции сканирования QR-кода
