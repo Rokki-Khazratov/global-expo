@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Member, Ticket
+from .models import *
 
-class TicketSerializer(serializers.ModelSerializer):
+class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ticket
-        fields = ['ticket_id', 'is_valid', 'qr_code']
+        model = Feedback
+        fields = "__all__"
 
 class MemberSerializer(serializers.ModelSerializer):
 

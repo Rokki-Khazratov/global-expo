@@ -3,22 +3,30 @@ import qrcode
 from django.db import models
 from django.conf import settings
 
+
+class ROLE_CHOISES(models.IntegerChoices):
+    JANUARY = 1, 'VIP'
+    FEBRUARY = 2, 'Exhibitor'
+    MARCH = 3, 'Visitor'
+
+
 class Member(models.Model):
-    first_name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
+    name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
     email = models.EmailField(unique=True, verbose_name="Email")
     company = models.CharField(max_length=200, verbose_name="Компания")
     position = models.CharField(max_length=150, verbose_name="Должность", blank=True)
     phone = models.CharField(max_length=15, verbose_name="Телефон")
     registration_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата регистрации")
-    qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True)  # Поле для QR-кода
+    qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True) 
+    role = models.IntegerField(choices=ROLE_CHOISES.choices,default=3)
 
-    class Meta:
-        verbose_name = "Участник"
-        verbose_name_plural = "Участники"
-        ordering = ['registration_date']
+    # class Meta:
+    #     verbose_name = "Участник"
+    #     verbose_name_plural = "Участники"
+    #     ordering = ['registration_date']
 
     def __str__(self):
-        return f"{self.first_name}  ({self.company})"
+        return f"{self.name}  ({self.company})"
 
     def save(self, *args, **kwargs):
         # Сохраняем объект для получения ID
@@ -48,11 +56,12 @@ class Member(models.Model):
             super().save(*args, **kwargs)
 
 
-class Ticket(models.Model):
-    ticket_id = models.CharField(max_length=255, unique=True)
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
-    is_valid = models.BooleanField(default=True)
-    qr_code = models.ImageField(upload_to='qr_codes/tickets/', blank=True, null=True)  # Поле для QR-кода
+
+class Feedback(models.Model):
+    member_id = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
+    feedback_body= models.TextField()
 
     def __str__(self):
-        return f"Ticket {self.ticket_id} for {self.member.first_name} {self.member.last_name}"
+        return f"{self.member_id.name}"
+
+

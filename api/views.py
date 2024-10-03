@@ -16,19 +16,6 @@ class MemberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MemberSerializer
 
 
-class CheckTicketAPIView(generics.GenericAPIView):
-    serializer_class = TicketSerializer
-
-    def post(self, request, *args, **kwargs):
-        ticket_id = request.data.get('ticket_id')
-        try:
-            ticket = Ticket.objects.get(ticket_id=ticket_id)
-            if ticket.is_valid:
-                return Response({"message": "Билет действителен", "member": MemberSerializer(ticket.member).data}, status=status.HTTP_200_OK)
-            else:
-                return Response({"message": "Билет недействителен"}, status=status.HTTP_400_BAD_REQUEST)
-        except Ticket.DoesNotExist:
-            return Response({"message": "Билет не найден"}, status=status.HTTP_404_NOT_FOUND)
 
 class CheckMemberAPIView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
