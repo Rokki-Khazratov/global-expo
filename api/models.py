@@ -60,6 +60,10 @@ class Member(models.Model):
 class Feedback(models.Model):
     member_id = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
     feedback_body= models.TextField()
+    #! forms
+    #!voice
+    #! api
+
 
     def __str__(self):
         return f"{self.member_id.name}"

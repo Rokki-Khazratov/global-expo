@@ -15,6 +15,23 @@ class MemberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
 
+class FeedbackListCreateView(generics.ListCreateAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+
+class FeedbackRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+
+
+
+
+
+
+
+
+
+
 
 
 class CheckMemberAPIView(generics.GenericAPIView):
@@ -61,3 +78,5 @@ class CheckQRCodeView(APIView):
         
         # Если данные невалидны
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
