@@ -101,19 +101,20 @@
 </head>
 <body>
     <div class="form-container">
-        <h1>Submit Feedback</h1>
+        <h1>Оцените Выставку <br>
+        Bank&Business2024</h1>
         <form method="POST" id="feedback-form">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Submit Feedback</button>
+            <button type="submit">Отправить отзыв</button>
         </form>
     </div>
 
     <!-- Modal Window -->
     <div id="thankyouModal" class="modal">
         <div class="modal-content">
-            <h2>Thank You for Your Feedback!</h2>
-            <p>This page will refresh in <span class="countdown-timer">5</span> seconds.</p>
+            <h2>Спасибо за ваш отзыв!</h2>
+            <p>Страница обновится через <span class="countdown-timer">5</span> секунд.</p>
         </div>
     </div>
 
