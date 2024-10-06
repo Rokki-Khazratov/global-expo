@@ -1,11 +1,12 @@
-import os
+from django.shortcuts import render, redirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status,generics
+from PIL import Image
 from django.conf import settings
 from .models import *
 from .serializers import *
-from PIL import Image
+from .forms import *
 
 class MemberListCreateView(generics.ListCreateAPIView):
     queryset = Member.objects.all()
@@ -26,6 +27,17 @@ class FeedbackRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+
+def feedback_form_view(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('feedback_list_create')  # Redirect after successful submission to the API view
+    else:
+        form = FeedbackForm()
+
+    return render(request, 'feedback_form.html', {'form': form})
 
 
 
