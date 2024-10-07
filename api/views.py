@@ -5,6 +5,8 @@ from rest_framework import status,generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from PIL import Image
 from django.conf import settings
+
+import logging
 from .models import *
 from .serializers import *
 from .forms import *
@@ -13,6 +15,8 @@ from .utils import *
 
 
 
+
+logger = logging.getLogger(__name__)
 
 
 class MemberListCreateView(generics.ListCreateAPIView):
@@ -25,23 +29,36 @@ class MemberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+
+
 class FeedbackListCreateView(generics.ListCreateAPIView):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    parser_classes = (MultiPartParser, FormParser)  # Убедись, что используются правильные парсеры для файлов
+    parser_classes = (MultiPartParser, FormParser)  # Парсеры для работы с файлами
 
     def perform_create(self, serializer):
         """Переопределяем сохранение, чтобы работать с аудиофайлами."""
-        instance = serializer.save()
+        try:
+            # Сохраняем экземпляр Feedback
+            instance = serializer.save()
+            logger.info(f"Отзыв сохранен в базе данных: {instance.id}")
 
-        # Если есть аудиофайл, обработаем его
-        if self.request.FILES.get('audio_feedback'):
-            audio_file = self.request.FILES['audio_feedback']
-            output_filename = save_audio_as_mp3(audio_file, instance)  # Конвертируем и сохраняем как MP3
+            # Проверяем, был ли загружен аудиофайл
+            if 'audio_feedback' in self.request.FILES:
+                audio_file = self.request.FILES['audio_feedback']
+                logger.info(f"Аудиофайл получен: {audio_file.name}")
 
-            # Сохраняем имя файла в модели
-            instance.audio_feedback.name = f'audio_feedbacks/{output_filename}'
-            instance.save()
+                # Сохраняем аудиофайл напрямую в модель
+                instance.audio_feedback = audio_file
+                instance.save()
+
+                logger.info(f"Аудиофайл сохранен в базе данных: {instance.audio_feedback.name}")
+            else:
+                logger.warning("Аудиофайл не был получен.")
+        
+        except Exception as e:
+            logger.error(f"Ошибка при создании отзыва: {str(e)}")
+            raise
 
         return instance
 
