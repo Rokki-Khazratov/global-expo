@@ -21,4 +21,4 @@ class MemberAdmin(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'member_id', 'feedback_body')
+    list_display = ('id', 'member_id', 'feedback_body','audio_feedback')

@@ -3,6 +3,11 @@ import qrcode
 from django.db import models
 from django.conf import settings
 
+def upload_audio_to(instance, filename):
+    """Формируем имя файла на основе ID участника."""
+    ext = filename.split('.')[-1]
+    filename = f"audio/member_{instance.member_id.id}.{ext}"
+    return os.path.join('audio_feedbacks', filename)
 
 class ROLE_CHOISES(models.IntegerChoices):
     JANUARY = 1, 'VIP'
@@ -59,10 +64,10 @@ class Member(models.Model):
 
 class Feedback(models.Model):
     member_id = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
-    feedback_body= models.TextField()
-    #! forms
+    feedback_body= models.TextField(blank=True, null=True)
+    audio_feedback = models.FileField(upload_to=upload_audio_to, blank=True, null=True)  # Используем функцию для именования файлов
+
     #!voice
-    #! api
 
 
     def __str__(self):

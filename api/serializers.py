@@ -13,8 +13,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
     member_data = MemberSerializer(source='member_id', read_only=True)  # Use source to point to the related field
     class Meta:
         model = Feedback
-        fields = ['id','feedback_body','member_data']
-
+        fields = ['id','feedback_body','member_data','audio_feedback']
 
 
 class CheckQRCodeSerializer(serializers.Serializer):

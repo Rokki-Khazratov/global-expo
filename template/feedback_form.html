@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: #023020;
             margin: 0;
             padding: 0;
             display: flex;
@@ -18,7 +19,7 @@
 
         .form-container {
             background-color: #fff;
-            padding: 20px;
+            padding: 3%;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             max-width: 400px;
@@ -38,7 +39,9 @@
             color: #333;
         }
 
-        input[type="text"], textarea, select {
+        input[type="text"],
+        textarea,
+        select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -68,8 +71,8 @@
 
         /* Modal styles */
         .modal {
-            display: none; 
-            position: fixed; 
+            display: none;
+            position: fixed;
             z-index: 1000;
             left: 0;
             top: 0;
@@ -97,15 +100,55 @@
             font-weight: bold;
             color: #4CAF50;
         }
+
+        .audio-controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .audio-controls button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            /* Добавил отступ снизу для кнопок */
+            border-radius: 5px;
+        }
+
+        .audio-controls button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 10px;
+            /* Добавил отступ сверху для элемента аудио */
+        }
     </style>
 </head>
+
 <body>
     <div class="form-container">
         <h1>Оцените Выставку <br>
-        Bank&Business2024</h1>
-        <form method="POST" id="feedback-form">
+            Bank&Business2024</h1>
+        <form method="POST" enctype="multipart/form-data" id="feedback-form">
             {% csrf_token %}
             {{ form.as_p }}
+
+            <!-- Поле для записи аудио, управляем через JS -->
+            <div class="audio-controls">
+                <label for="audio-feedback">Аудио отзыв:</label>
+                <button type="button" id="start-recording">Начать запись</button>
+                <button type="button" id="stop-recording" disabled>Остановить запись</button>
+                <audio id="audio-preview" controls></audio>
+                <input type="hidden" id="audio-input" name="audio_feedback">
+            </div>
+
             <button type="submit">Отправить отзыв</button>
         </form>
     </div>
@@ -119,46 +162,85 @@
     </div>
 
     <script>
-        // Handle form submission
-        document.getElementById('feedback-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
+        let mediaRecorder;
+        let audioChunks = [];
+    
+        document.getElementById('start-recording').addEventListener('click', async function () {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+    
+            mediaRecorder.start();
+            document.getElementById('start-recording').disabled = true;
+            document.getElementById('stop-recording').disabled = false;
+    
+            mediaRecorder.addEventListener("dataavailable", event => {
+                audioChunks.push(event.data);
+            });
+    
+            mediaRecorder.addEventListener("stop", () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                document.getElementById('audio-preview').src = audioUrl;
+    
+                // Преобразуем Blob в File для отправки
+                const audioFile = new File([audioBlob], "audio_feedback.wav", { type: 'audio/wav' });
+    
+                // Добавляем аудиофайл в скрытый input, чтобы отправить через форму
+                const audioInput = document.createElement("input");
+                audioInput.setAttribute("type", "hidden");
+                audioInput.setAttribute("name", "audio_feedback");
+                audioInput.files = [audioFile];  // Присваиваем файл скрытому input
+    
+                document.getElementById('feedback-form').appendChild(audioInput);
+    
+                audioChunks = [];  // Очищаем массив после завершения записи
+            });
+        });
+    
+        document.getElementById('stop-recording').addEventListener('click', function () {
+            mediaRecorder.stop();
+            document.getElementById('start-recording').disabled = false;
+            document.getElementById('stop-recording').disabled = true;
+        });
+    
+        // Обработка отправки формы
+        document.getElementById('feedback-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Отключаем стандартную отправку формы
+    
             const form = this;
-
-            // Create a formData object to send the form data using fetch
-            const formData = new FormData(form);
-
+            const formData = new FormData(form); // Собираем данные формы
+    
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
             })
             .then(response => {
                 if (response.ok) {
-                    // Show the modal
+                    // Показать модальное окно с успешным результатом
                     document.getElementById('thankyouModal').style.display = 'block';
-
-                    // Start the countdown timer
+    
+                    // Таймер для обновления страницы
                     let countdown = 5;
                     const countdownElement = document.querySelector('.countdown-timer');
-                    
-                    const countdownInterval = setInterval(function() {
+    
+                    const countdownInterval = setInterval(function () {
                         countdown -= 1;
                         countdownElement.textContent = countdown;
-
-                        // If the countdown reaches 0, refresh the page
+    
                         if (countdown <= 0) {
                             clearInterval(countdownInterval);
                             location.reload();
                         }
-                    }, 1000); // Every 1 second (1000ms)
+                    }, 1000);
                 } else {
-                    alert('There was an issue submitting your feedback. Please try again.');
+                    alert('Ошибка при отправке отзыва. Пожалуйста, попробуйте снова.');
                 }
             })
             .catch(error => {
-                alert('An error occurred. Please try again.');
+                alert('Произошла ошибка. Попробуйте снова.');
             });
         });
     </script>
 </body>
+
 </html>
