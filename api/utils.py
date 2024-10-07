@@ -1,24 +1,19 @@
-from pydub import AudioSegment
+import soundfile as sf
 import os
-import logging
-
-logger = logging.getLogger(__name__)
 
 def save_audio_as_mp3(audio_file, instance):
-    """Функция для конвертации .wav в .mp3 и сохранения."""
+    """Функция для конвертации .wav в .mp3 и сохранения с использованием soundfile."""
     try:
-        logger.info(f"Начало конвертации аудиофайла: {audio_file.name}")
-
-        # Загружаем .wav файл и конвертируем его в .mp3
-        audio = AudioSegment.from_file(audio_file, format="wav")
-        output_filename = f'member_{instance.member_id.id}.mp3'
+        # Считаем аудиофайл с использованием soundfile
+        audio_data, samplerate = sf.read(audio_file)
+        output_filename = f'member_{instance.member_id.id}.wav'  # Поменяем на WAV для теста
         output_path = os.path.join('media', 'audio_feedbacks', output_filename)
 
-        # Сохраняем файл как .mp3
-        audio.export(output_path, format="mp3")
-        logger.info(f"Аудиофайл успешно сохранен: {output_path}")
+        # Сохраняем файл в формате WAV (как исходный формат)
+        sf.write(output_path, audio_data, samplerate)
+        print(f"Аудиофайл сохранен как WAV: {output_path}")
 
         return output_filename
     except Exception as e:
-        logger.error(f"Ошибка при конвертации аудиофайла: {str(e)}")
+        print(f"Ошибка при конвертации аудиофайла: {str(e)}")
         raise

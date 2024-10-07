@@ -139,14 +139,15 @@
         <form method="POST" enctype="multipart/form-data" id="feedback-form">
             {% csrf_token %}
             {{ form.as_p }}
+            <!-- Это должен быть рендер стандартной формы без использования атрибутов autofocus или placeholder -->
 
-            <!-- Поле для записи аудио, управляем через JS -->
             <div class="audio-controls">
                 <label for="audio-feedback">Аудио отзыв:</label>
                 <button type="button" id="start-recording">Начать запись</button>
                 <button type="button" id="stop-recording" disabled>Остановить запись</button>
                 <audio id="audio-preview" controls></audio>
-                <input type="hidden" id="audio-input" name="audio_feedback">
+                <input type="file" id="audio-input" name="audio_feedback" style="display: none;">
+                <!-- Обычное поле загрузки файла без лишних атрибутов -->
             </div>
 
             <button type="submit">Отправить отзыв</button>
@@ -179,31 +180,14 @@
 
             mediaRecorder.addEventListener("stop", () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                const audioFile = new File([audioBlob], "audio_feedback.wav", { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                document.getElementById('audio-preview').src = audioUrl;
 
-                // Отладка: проверим, что файл был создан
-                console.log("Создан аудиофайл: ", audioFile);
+                // Логируем добавление аудиофайла
+                console.log("Audio recording stopped, file created:", audioBlob);
 
-                // Очищаем старые inputы и добавляем новый скрытый input для отправки файла
-                const form = document.getElementById('feedback-form');
-                const existingAudioInput = document.getElementById('audio-input');
-                if (existingAudioInput) {
-                    existingAudioInput.remove();  // Удаляем старый input, если он есть
-                }
-
-                const audioInput = document.createElement("input");
-                audioInput.setAttribute("type", "file");
-                audioInput.setAttribute("name", "audio_feedback");
-                audioInput.setAttribute("id", "audio-input");
-
-                // Используем DataTransfer для симуляции загрузки файла
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(audioFile);
-                audioInput.files = dataTransfer.files;
-
-                form.appendChild(audioInput);  // Добавляем input в форму
-
-                console.log("Файл добавлен в форму: ", audioInput.files);
+                // Сохраняем аудиофайл как объект Blob, но не отправляем сразу
+                document.getElementById('audio-input').audioBlob = audioBlob;
                 audioChunks = [];  // Очищаем массив после завершения записи
             });
         });
@@ -221,9 +205,16 @@
             const form = this;
             const formData = new FormData(form); // Собираем данные формы
 
-            // Отладка: проверим содержимое FormData
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value);
+            // Проверяем, записано ли аудио и добавляем его в formData, если есть
+            const audioInput = document.getElementById('audio-input');
+            if (audioInput.audioBlob) {
+                const audioFile = new File([audioInput.audioBlob], "audio_feedback.wav", { type: 'audio/wav' });
+                formData.append('audio_feedback', audioFile);
+
+                // Логируем добавление аудиофайла в formData
+                console.log("Audio file added to formData:", audioFile);
+            } else {
+                console.log("No audio file found.");
             }
 
             fetch(form.action, {
@@ -253,6 +244,7 @@
                     }
                 })
                 .catch(error => {
+                    console.error('Error during form submission:', error);
                     alert('Произошла ошибка. Попробуйте снова.');
                 });
         });

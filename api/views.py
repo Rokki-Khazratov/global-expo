@@ -34,30 +34,30 @@ class MemberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class FeedbackListCreateView(generics.ListCreateAPIView):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    parser_classes = (MultiPartParser, FormParser)  # Парсеры для работы с файлами
+    parser_classes = (MultiPartParser, FormParser)  # Для загрузки файлов
 
     def perform_create(self, serializer):
         """Переопределяем сохранение, чтобы работать с аудиофайлами."""
         try:
             # Сохраняем экземпляр Feedback
             instance = serializer.save()
-            logger.info(f"Отзыв сохранен в базе данных: {instance.id}")
+            print(f"Отзыв сохранен в базе данных: {instance.id}")
 
             # Проверяем, был ли загружен аудиофайл
             if 'audio_feedback' in self.request.FILES:
                 audio_file = self.request.FILES['audio_feedback']
-                logger.info(f"Аудиофайл получен: {audio_file.name}")
+                print(f"Аудиофайл получен: {audio_file.name}")
 
-                # Сохраняем аудиофайл напрямую в модель
+                # Сохраняем аудиофайл напрямую в модель 
                 instance.audio_feedback = audio_file
                 instance.save()
 
-                logger.info(f"Аудиофайл сохранен в базе данных: {instance.audio_feedback.name}")
+                print(f"Аудиофайл сохранен в базе данных: {instance.audio_feedback.name}")
             else:
-                logger.warning("Аудиофайл не был получен.")
+                print("Аудиофайл не был получен.")
         
         except Exception as e:
-            logger.error(f"Ошибка при создании отзыва: {str(e)}")
+            print(f"Ошибка при создании отзыва: {str(e)}")
             raise
 
         return instance
@@ -69,20 +69,72 @@ class FeedbackRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+#!wav to mp3
+# def feedback_form_view(request):
+#     if request.method == 'POST':
+#         form = FeedbackForm(request.POST, request.FILES)  # request.FILES обязательно для файлов
+#         if form.is_valid():
+#             try:
+#                 instance = form.save(commit=False)
 
+#                 # Логирование файла
+#                 if 'audio_feedback' in request.FILES:
+#                     audio_file = request.FILES['audio_feedback']
+#                     print(f"Аудиофайл получен: {audio_file.name}, размер: {audio_file.size}")
+
+#                     # Пробуем сохранить файл
+#                     output_filename = save_audio_as_mp3(audio_file, instance)
+#                     print(f"Аудиофайл конвертирован в MP3 и сохранен как: {output_filename}")
+#                     instance.audio_feedback.name = f'audio_feedbacks/{output_filename}'
+#                 else:
+#                     print('AUdifile ne poluchen')
+
+#                 instance.save()
+#                 print(f"Отзыв сохранен в базе данных с id: {instance.id}")
+#                 return redirect('feedback_list_create')
+#             except Exception as e:
+#                 print(f"Ошибка при сохранении отзыва: {str(e)}")
+#                 return render(request, 'feedback_form.html', {'form': form, 'error': str(e)})
+#         else:
+#             print("Форма не прошла валидацию.")
+#     else:
+#         form = FeedbackForm()
+
+#     return render(request, 'feedback_form.html', {'form': form})
+
+#!WAV
 def feedback_form_view(request):
     if request.method == 'POST':
-        form = FeedbackForm(request.POST)
+        form = FeedbackForm(request.POST, request.FILES)  # request.FILES обязательно для файлов
         if form.is_valid():
-            form.save()
-            return redirect('feedback_list_create')  # Redirect after successful submission to the API view
+            try:
+                instance = form.save(commit=False)
+
+                # Проверяем наличие файла в запросе
+                if 'audio_feedback' in request.FILES:
+                    audio_file = request.FILES['audio_feedback']
+                    print(f"Аудиофайл получен: {audio_file.name}, размер: {audio_file.size}")
+
+                    # Сохраняем аудиофайл напрямую в базу данных
+                    instance.audio_feedback = audio_file
+                else:
+                    print('Аудиофайл не получен')
+
+                # Сохраняем отзыв с аудиофайлом
+                instance.save()
+                print(f"Отзыв сохранен в базе данных с id: {instance.id}")
+                return redirect('feedback_list_create')
+            except Exception as e:
+                print(f"Ошибка при сохранении отзыва: {str(e)}")
+                return render(request, 'feedback_form.html', {'form': form, 'error': str(e)})
+        else:
+            print("Форма не прошла валидацию.")
     else:
         form = FeedbackForm()
 
     return render(request, 'feedback_form.html', {'form': form})
 
-
-
+#!member qr maker with role if exhibitor
 
 
 
