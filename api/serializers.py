@@ -9,11 +9,12 @@ class MemberSerializer(serializers.ModelSerializer):
         read_only_fields = ['registration_date', 'qr_code']
 
 
+
 class FeedbackSerializer(serializers.ModelSerializer):
-    member_data = MemberSerializer(source='member_id', read_only=True)  # Use source to point to the related field
+    member_data = MemberSerializer(source='member_id', read_only=True)
     class Meta:
         model = Feedback
-        fields = ['id','feedback_body','member_data','audio_feedback']
+        fields = ['id', 'feedback_body', 'member_data']
 
 
 class CheckQRCodeSerializer(serializers.Serializer):

@@ -102,25 +102,16 @@ class FeedbackRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 #     return render(request, 'feedback_form.html', {'form': form})
 
-#!WAV
+
+
 def feedback_form_view(request):
     if request.method == 'POST':
-        form = FeedbackForm(request.POST, request.FILES)  # request.FILES обязательно для файлов
+        form = FeedbackForm(request.POST, request.FILES)
         if form.is_valid():
             try:
                 instance = form.save(commit=False)
 
-                # Проверяем наличие файла в запросе
-                if 'audio_feedback' in request.FILES:
-                    audio_file = request.FILES['audio_feedback']
-                    print(f"Аудиофайл получен: {audio_file.name}, размер: {audio_file.size}")
-
-                    # Сохраняем аудиофайл напрямую в базу данных
-                    instance.audio_feedback = audio_file
-                else:
-                    print('Аудиофайл не получен')
-
-                # Сохраняем отзыв с аудиофайлом
+                # Сохраняем отзыв без аудиофайла
                 instance.save()
                 print(f"Отзыв сохранен в базе данных с id: {instance.id}")
                 return redirect('feedback_list_create')
@@ -134,7 +125,7 @@ def feedback_form_view(request):
 
     return render(request, 'feedback_form.html', {'form': form})
 
-#!member qr maker with role if exhibitor
+
 
 
 

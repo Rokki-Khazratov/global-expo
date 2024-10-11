@@ -2,6 +2,12 @@ import os
 import qrcode
 from django.db import models
 from django.conf import settings
+from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
+import qrcode
+
+
+#!utils
 
 def upload_audio_to(instance, filename):
     """Формируем имя файла на основе ID участника."""
@@ -14,6 +20,8 @@ class ROLE_CHOISES(models.IntegerChoices):
     FEBRUARY = 2, 'Exhibitor'
     MARCH = 3, 'Visitor'
 
+
+#!models
 
 class Member(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
@@ -33,32 +41,60 @@ class Member(models.Model):
     def __str__(self):
         return f"{self.name}  ({self.company})"
 
+    def create_qr_code_with_text(self):
+        # Create QR code
+        qr_data = f"{self.id}"
+        qr = qrcode.make(qr_data)
+
+        width, height = 708, 414  # 6 cm * 300 dpi and 4 cm * 300 dpi
+        img = Image.new('RGB', (width, height), 'white')
+
+        qr_size = (int(width * 0.5), int(width * 0.5))  # Maintain the same width for height
+        img.paste(qr.resize(qr_size), (int((width - qr_size[0]) / 2), int((height - qr_size[1]) / 2)))  # Center the QR code
+
+
+        try:
+            font = ImageFont.truetype('DejaVuSans-Bold.ttf', 40)  # Use a different bold font
+        except IOError:
+            print("error")
+            font = ImageFont.load_default()
+
+        # Create a drawing context
+        draw = ImageDraw.Draw(img)
+
+        # Calculate text size and position
+        name_text = self.name
+        id_text = str(self.id)
+
+        # Top text
+        name_bbox = draw.textbbox((0, 0), name_text, font=font)
+        name_width = name_bbox[2] - name_bbox[0]  # width
+        draw.text(((width - name_width) / 2, 10), name_text, fill="black", font=font) 
+
+        # Bottom text
+        id_bbox = draw.textbbox((0, 0), id_text, font=font)
+        id_width = id_bbox[2] - id_bbox[0]  # width
+        draw.text(((width - id_width) / 2, height - id_bbox[3] - 10), id_text, fill="black", font=font)  # Centered at the bottom
+
+
+
+        qr_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes', 'members')
+        if not os.path.exists(qr_dir):
+            os.makedirs(qr_dir)
+
+        qr_image_path = os.path.join(qr_dir, f'member-{self.id}.png')
+        img.save(qr_image_path)
+
+        self.qr_code = f'qr_codes/members/member-{self.id}.png'
+        self.save()
+
+
     def save(self, *args, **kwargs):
-        # Сохраняем объект для получения ID
-        super().save(*args, **kwargs)
+        super().save(*args, **kwargs)  # Сохраняем объект для получения ID
 
-        # Если QR-код еще не был сгенерирован, создаём его
         if not self.qr_code:
-            # Формат данных для QR-кода: member-{self.id}-ticket
-            qr_data = f"{self.id}"
-            
-            # Путь для сохранения QR-кода
-            qr_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes', 'members')
-            qr_image_path = os.path.join(qr_dir, f'member-{self.id}.png')
+            self.create_qr_code_with_text()  # Генерируем QR-код с текстом
 
-            # Убедимся, что директория существует
-            if not os.path.exists(qr_dir):
-                os.makedirs(qr_dir)
-
-            # Генерация QR-кода с использованием вышеуказанного формата данных
-            qr = qrcode.make(qr_data)
-            qr.save(qr_image_path)
-
-            # Сохраняем путь к изображению в поле `qr_code`
-            self.qr_code = f'qr_codes/members/member-{self.id}.png'
-
-            # Сохраняем изменения в базе данных
-            super().save(*args, **kwargs)
 
 
 
@@ -66,8 +102,6 @@ class Feedback(models.Model):
     member_id = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
     feedback_body= models.TextField(blank=True, null=True)
     audio_feedback = models.FileField(upload_to=upload_audio_to, blank=True, null=True)  # Используем функцию для именования файлов
-
-    #!voice
 
 
     def __str__(self):

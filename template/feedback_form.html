@@ -100,55 +100,17 @@
             font-weight: bold;
             color: #4CAF50;
         }
-
-        .audio-controls {
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .audio-controls button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            /* Добавил отступ снизу для кнопок */
-            border-radius: 5px;
-        }
-
-        .audio-controls button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        audio {
-            width: 100%;
-            margin-top: 10px;
-            /* Добавил отступ сверху для элемента аудио */
-        }
     </style>
 </head>
 
 <body>
     <div class="form-container">
         <h1>Оцените Выставку <br>
-            Bank&Business2024</h1>
+            Bank&Business <br>
+            UzCharmExpo EURASIA <br>2024</h1>
         <form method="POST" enctype="multipart/form-data" id="feedback-form">
             {% csrf_token %}
             {{ form.as_p }}
-            <!-- Это должен быть рендер стандартной формы без использования атрибутов autofocus или placeholder -->
-
-            <div class="audio-controls">
-                <label for="audio-feedback">Аудио отзыв:</label>
-                <button type="button" id="start-recording">Начать запись</button>
-                <button type="button" id="stop-recording" disabled>Остановить запись</button>
-                <audio id="audio-preview" controls></audio>
-                <input type="file" id="audio-input" name="audio_feedback" style="display: none;">
-                <!-- Обычное поле загрузки файла без лишних атрибутов -->
-            </div>
 
             <button type="submit">Отправить отзыв</button>
         </form>
@@ -163,59 +125,11 @@
     </div>
 
     <script>
-        let mediaRecorder;
-        let audioChunks = [];
-
-        document.getElementById('start-recording').addEventListener('click', async function () {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-
-            mediaRecorder.start();
-            document.getElementById('start-recording').disabled = true;
-            document.getElementById('stop-recording').disabled = false;
-
-            mediaRecorder.addEventListener("dataavailable", event => {
-                audioChunks.push(event.data);
-            });
-
-            mediaRecorder.addEventListener("stop", () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                const audioUrl = URL.createObjectURL(audioBlob);
-                document.getElementById('audio-preview').src = audioUrl;
-
-                // Логируем добавление аудиофайла
-                console.log("Audio recording stopped, file created:", audioBlob);
-
-                // Сохраняем аудиофайл как объект Blob, но не отправляем сразу
-                document.getElementById('audio-input').audioBlob = audioBlob;
-                audioChunks = [];  // Очищаем массив после завершения записи
-            });
-        });
-
-        document.getElementById('stop-recording').addEventListener('click', function () {
-            mediaRecorder.stop();
-            document.getElementById('start-recording').disabled = false;
-            document.getElementById('stop-recording').disabled = true;
-        });
-
-        // Обработка отправки формы
         document.getElementById('feedback-form').addEventListener('submit', function (event) {
             event.preventDefault(); // Отключаем стандартную отправку формы
 
             const form = this;
             const formData = new FormData(form); // Собираем данные формы
-
-            // Проверяем, записано ли аудио и добавляем его в formData, если есть
-            const audioInput = document.getElementById('audio-input');
-            if (audioInput.audioBlob) {
-                const audioFile = new File([audioInput.audioBlob], "audio_feedback.wav", { type: 'audio/wav' });
-                formData.append('audio_feedback', audioFile);
-
-                // Логируем добавление аудиофайла в formData
-                console.log("Audio file added to formData:", audioFile);
-            } else {
-                console.log("No audio file found.");
-            }
 
             fetch(form.action, {
                 method: 'POST',
