@@ -6,7 +6,10 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from PIL import Image
 from django.conf import settings
 
-import logging
+from rest_framework.permissions import IsAdminUser
+from django.contrib.auth.decorators import user_passes_test
+
+
 from .models import *
 from .serializers import *
 from .forms import *
@@ -16,94 +19,7 @@ from .utils import *
 
 
 
-logger = logging.getLogger(__name__)
-
-
-class MemberListCreateView(generics.ListCreateAPIView):
-    queryset = Member.objects.all()
-    serializer_class = MemberSerializer
-
-class MemberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Member.objects.all()
-    serializer_class = MemberSerializer
-
-
-
-
-
-class FeedbackListCreateView(generics.ListCreateAPIView):
-    queryset = Feedback.objects.all()
-    serializer_class = FeedbackSerializer
-    parser_classes = (MultiPartParser, FormParser)  # Для загрузки файлов
-
-    def perform_create(self, serializer):
-        """Переопределяем сохранение, чтобы работать с аудиофайлами."""
-        try:
-            # Сохраняем экземпляр Feedback
-            instance = serializer.save()
-            print(f"Отзыв сохранен в базе данных: {instance.id}")
-
-            # Проверяем, был ли загружен аудиофайл
-            if 'audio_feedback' in self.request.FILES:
-                audio_file = self.request.FILES['audio_feedback']
-                print(f"Аудиофайл получен: {audio_file.name}")
-
-                # Сохраняем аудиофайл напрямую в модель 
-                instance.audio_feedback = audio_file
-                instance.save()
-
-                print(f"Аудиофайл сохранен в базе данных: {instance.audio_feedback.name}")
-            else:
-                print("Аудиофайл не был получен.")
-        
-        except Exception as e:
-            print(f"Ошибка при создании отзыва: {str(e)}")
-            raise
-
-        return instance
-
-class FeedbackRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Feedback.objects.all()
-    serializer_class = FeedbackSerializer
-
-
-
-
-#!wav to mp3
-# def feedback_form_view(request):
-#     if request.method == 'POST':
-#         form = FeedbackForm(request.POST, request.FILES)  # request.FILES обязательно для файлов
-#         if form.is_valid():
-#             try:
-#                 instance = form.save(commit=False)
-
-#                 # Логирование файла
-#                 if 'audio_feedback' in request.FILES:
-#                     audio_file = request.FILES['audio_feedback']
-#                     print(f"Аудиофайл получен: {audio_file.name}, размер: {audio_file.size}")
-
-#                     # Пробуем сохранить файл
-#                     output_filename = save_audio_as_mp3(audio_file, instance)
-#                     print(f"Аудиофайл конвертирован в MP3 и сохранен как: {output_filename}")
-#                     instance.audio_feedback.name = f'audio_feedbacks/{output_filename}'
-#                 else:
-#                     print('AUdifile ne poluchen')
-
-#                 instance.save()
-#                 print(f"Отзыв сохранен в базе данных с id: {instance.id}")
-#                 return redirect('feedback_list_create')
-#             except Exception as e:
-#                 print(f"Ошибка при сохранении отзыва: {str(e)}")
-#                 return render(request, 'feedback_form.html', {'form': form, 'error': str(e)})
-#         else:
-#             print("Форма не прошла валидацию.")
-#     else:
-#         form = FeedbackForm()
-
-#     return render(request, 'feedback_form.html', {'form': form})
-
-
-
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def feedback_form_view(request):
     if request.method == 'POST':
         form = FeedbackForm(request.POST, request.FILES)
@@ -111,15 +27,15 @@ def feedback_form_view(request):
             try:
                 instance = form.save(commit=False)
 
-                # Сохраняем отзыв без аудиофайла
+                # Save feedback without an audio file
                 instance.save()
-                print(f"Отзыв сохранен в базе данных с id: {instance.id}")
+                print(f"Feedback saved with id: {instance.id}")
                 return redirect('feedback_list_create')
             except Exception as e:
-                print(f"Ошибка при сохранении отзыва: {str(e)}")
+                print(f"Error saving feedback: {str(e)}")
                 return render(request, 'feedback_form.html', {'form': form, 'error': str(e)})
         else:
-            print("Форма не прошла валидацию.")
+            print("Form validation failed.")
     else:
         form = FeedbackForm()
 
@@ -131,7 +47,55 @@ def feedback_form_view(request):
 
 
 
+
+
+
+class MemberListCreateView(generics.ListCreateAPIView):
+    queryset = Member.objects.all()
+    serializer_class = MemberSerializer
+    permission_classes = [IsAdminUser]  
+
+class MemberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Member.objects.all()
+    serializer_class = MemberSerializer
+    permission_classes = [IsAdminUser]  
+
+class FeedbackListCreateView(generics.ListCreateAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAdminUser]  
+
+    def perform_create(self, serializer):
+        """Save feedback without audio."""
+        try:
+            instance = serializer.save()
+            print(f"Feedback saved to database: {instance.id}")
+
+            if 'audio_feedback' in self.request.FILES:
+                audio_file = self.request.FILES['audio_feedback']
+                print(f"Audio file received: {audio_file.name}")
+                instance.audio_feedback = audio_file
+                instance.save()
+                print(f"Audio file saved: {instance.audio_feedback.name}")
+            else:
+                print("No audio file received.")
+
+        except Exception as e:
+            print(f"Error saving feedback: {str(e)}")
+            raise
+
+        return instance
+
+class FeedbackRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+    permission_classes = [IsAdminUser]  
+
+
 class CheckMemberAPIView(generics.GenericAPIView):
+    permission_classes = [IsAdminUser]  
+
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         phone = request.data.get('phone')
@@ -142,38 +106,29 @@ class CheckMemberAPIView(generics.GenericAPIView):
                 member = Member.objects.get(email=email)
             elif phone:
                 member = Member.objects.get(phone=phone)
-            
+
             if member:
-                return Response({"message": "Участник найден", "member": MemberSerializer(member).data}, status=status.HTTP_200_OK)
+                return Response({"message": "Member found", "member": MemberSerializer(member).data}, status=status.HTTP_200_OK)
             else:
-                return Response({"message": "Участник не найден"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
 
         except Member.DoesNotExist:
-            return Response({"message": "Участник не найден"}, status=status.HTTP_404_NOT_FOUND)
-
-
-
-
-
-
-
+            return Response({"message": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CheckQRCodeView(APIView):
+    permission_classes = [IsAdminUser]  
+
     def post(self, request, *args, **kwargs):
         serializer = CheckQRCodeSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             member_id = serializer.validated_data['id']
-            
+
             try:
-                # Проверка существования пользователя с указанным id
                 member = Member.objects.get(id=member_id)
                 return Response({"exists": True}, status=status.HTTP_200_OK)
             except Member.DoesNotExist:
                 return Response({"exists": False}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Если данные невалидны
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

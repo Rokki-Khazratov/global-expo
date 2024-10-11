@@ -16,27 +16,30 @@ def upload_audio_to(instance, filename):
     return os.path.join('audio_feedbacks', filename)
 
 class ROLE_CHOISES(models.IntegerChoices):
-    JANUARY = 1, 'VIP'
-    FEBRUARY = 2, 'Exhibitor'
-    MARCH = 3, 'Visitor'
+    VIP = 1, 'VIP'
+    Exhibitor = 2, 'Exhibitor'
+    Visitor = 3, 'Visitor'
+    NotGived = 4, 'Not gived'
+
+class EXPO_TYPE(models.IntegerChoices):
+    VIP = 1, 'Banks&Business'
+    Exhibitor = 2, 'UzCharmEURASIA'
 
 
 #!models
 
 class Member(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
-    email = models.EmailField(unique=True, verbose_name="Email")
+    expo = models.IntegerField(choices=EXPO_TYPE.choices,default=4)
     company = models.CharField(max_length=200, verbose_name="Компания")
-    position = models.CharField(max_length=150, verbose_name="Должность", blank=True)
     phone = models.CharField(max_length=15, verbose_name="Телефон")
-    registration_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата регистрации")
-    qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True) 
-    role = models.IntegerField(choices=ROLE_CHOISES.choices,default=3)
 
-    # class Meta:
-    #     verbose_name = "Участник"
-    #     verbose_name_plural = "Участники"
-    #     ordering = ['registration_date']
+    email = models.EmailField(unique=True, verbose_name="Email",blank=True,null=True)
+    position = models.CharField(max_length=150, verbose_name="Должность", blank=True)
+    role = models.IntegerField(choices=ROLE_CHOISES.choices,default=4)
+
+    qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True) 
+    registration_time = models.TimeField(auto_now_add=True, verbose_name="Дата регистрации")
 
     def __str__(self):
         return f"{self.name}  ({self.company})"
@@ -90,10 +93,10 @@ class Member(models.Model):
 
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Сохраняем объект для получения ID
+        super().save(*args, **kwargs)  
 
         if not self.qr_code:
-            self.create_qr_code_with_text()  # Генерируем QR-код с текстом
+            self.create_qr_code_with_text()  
 
 
 
