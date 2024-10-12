@@ -5,8 +5,8 @@ from .models import *
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
-        fields = ['id', 'name', 'email', 'company', 'position', 'phone', 'registration_date', 'qr_code']
-        read_only_fields = ['registration_date', 'qr_code']
+        fields = ['id', 'name', 'company', 'position', 'phone', 'registration_time', 'qr_code']
+        read_only_fields = ['registration_time', 'qr_code']
 
 
 

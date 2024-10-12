@@ -53,7 +53,7 @@ def feedback_form_view(request):
 class MemberListCreateView(generics.ListCreateAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
-    permission_classes = [IsAdminUser]  
+    # permission_classes = [IsAdminUser]  
 
 class MemberRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
@@ -97,14 +97,11 @@ class CheckMemberAPIView(generics.GenericAPIView):
     permission_classes = [IsAdminUser]  
 
     def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
         phone = request.data.get('phone')
 
         try:
             member = None
-            if email:
-                member = Member.objects.get(email=email)
-            elif phone:
+            if phone:
                 member = Member.objects.get(phone=phone)
 
             if member:

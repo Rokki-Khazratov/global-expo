@@ -22,20 +22,19 @@ class ROLE_CHOISES(models.IntegerChoices):
     NotGived = 4, 'Not gived'
 
 class EXPO_TYPE(models.IntegerChoices):
-    VIP = 1, 'Banks&Business'
-    Exhibitor = 2, 'UzCharmEURASIA'
+    Banks = 1, 'Banks&Business'
+    UzCharm = 2, 'UzCharmEURASIA'
 
 
 #!models
 
 class Member(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
-    expo = models.IntegerField(choices=EXPO_TYPE.choices,default=4)
-    company = models.CharField(max_length=200, verbose_name="Компания")
-    phone = models.CharField(max_length=15, verbose_name="Телефон")
+    expo = models.IntegerField(choices=EXPO_TYPE.choices,default=1)
+    company = models.CharField(max_length=200, verbose_name="Компания", blank=True, null=True) 
+    phone = models.CharField(max_length=15, verbose_name="Телефон", blank=True, null=True) 
 
-    email = models.EmailField(unique=True, verbose_name="Email",blank=True,null=True)
-    position = models.CharField(max_length=150, verbose_name="Должность", blank=True)
+    position = models.CharField(max_length=250, verbose_name="Должность", blank=True)
     role = models.IntegerField(choices=ROLE_CHOISES.choices,default=4)
 
     qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True) 
