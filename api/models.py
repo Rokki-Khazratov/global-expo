@@ -5,6 +5,7 @@ from django.conf import settings
 from PIL import Image, ImageDraw, ImageFont
 from PIL import Image, ImageDraw, ImageFont
 import qrcode
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 #!utils
@@ -35,7 +36,7 @@ class Member(models.Model):
     phone = models.CharField(max_length=15, verbose_name="Телефон", blank=True, null=True) 
 
     position = models.CharField(max_length=250, verbose_name="Должность", blank=True)
-    role = models.IntegerField(choices=ROLE_CHOISES.choices,default=4)
+    role = models.IntegerField(choices=ROLE_CHOISES.choices,default=3)
 
     qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True) 
     registration_time = models.TimeField(auto_now_add=True, verbose_name="Дата регистрации")
@@ -95,7 +96,15 @@ class Member(models.Model):
         super().save(*args, **kwargs)  
 
         if not self.qr_code:
-            self.create_qr_code_with_text()  
+            self.create_qr_code_with_text() 
+
+class Bank (models.Model):
+    name = models.CharField(max_length=100) 
+    #add here: total_points
+
+    def __str__(self):
+        return self.name
+    
 
 
 
@@ -103,7 +112,9 @@ class Member(models.Model):
 class Feedback(models.Model):
     member_id = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
     feedback_body= models.TextField(blank=True, null=True)
-    audio_feedback = models.FileField(upload_to=upload_audio_to, blank=True, null=True)  # Используем функцию для именования файлов
+
+    bank = models.ForeignKey(Bank,on_delete=models.CASCADE)
+    stars = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
 
 
     def __str__(self):

@@ -14,6 +14,7 @@ BASE_URL = 'http://127.0.0.1:8000/'
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["wauu.uz"]
 
 # Application definition
 
@@ -27,13 +28,13 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'api',
-    'whitenoise.runserver_nostatic',  # Add this line
+    # 'whitenoise.runserver_nostatic',  # Add this line
     'corsheaders',  # Add this line
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
     'corsheaders.middleware.CorsMiddleware',  # Add this line
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -95,27 +96,27 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CORS_ALLOW_ALL_ORIGINS = False
 
-CORS_ALLOWED_ORIGINS = [
-    "https://wheels.uz",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://wheels.uz",
+# ]
 
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'OPTIONS',
-]
+# CORS_ALLOW_METHODS = [
+#     'GET',
+#     'POST',
+#     'PUT',
+#     'PATCH',
+#     'DELETE',
+#     'OPTIONS',
+# ]
 
-CORS_ALLOW_HEADERS = [
-    'Accept',
-    'Accept-Encoding',
-    'Authorization',
-    'Content-Type',
-    'Origin',
-    'X-CSRFToken',
-]
+# CORS_ALLOW_HEADERS = [
+#     'Accept',
+#     'Accept-Encoding',
+#     'Authorization',
+#     'Content-Type',
+#     'Origin',
+#     'X-CSRFToken',
+# ]
 
 LANGUAGE_CODE = 'Ru-ru'
 
@@ -125,15 +126,16 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 MEDIA_URL = '/storage/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'storage')
 
-STATIC_URL = '/staticfiles/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Optional: If using collectstatic
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+
+
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

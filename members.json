@@ -133,6 +133,7 @@
         "expo" : "Banks&Business",
         "company" : "Aloqanank",
         "position": "Matbuot markazi direktori",
+        "role" : "VIP",
         "phone": ""
     },
     {
@@ -141,6 +142,7 @@
         "expo" : "Banks&Business",
         "company" : "Aloqanank",
         "position": "Servis va marketing departamenti direktori v.b",
+        "role" : "VIP",
         "phone": ""
     },
     {
@@ -164,7 +166,7 @@
         "name": "Muratov Baxrom Gulomovich\n",
         "expo" : "Banks&Business",
         "company" : "Aloqanank",
-        "position": "Bank kartalari biznesini muvofiqlashtirish boshqarmasi boshligi",
+        "position": "Bank kartalari biznesini muvofiqlashtirish boshqarmasi boshligi", 
         "phone": ""
     },
     {
@@ -205,6 +207,7 @@
         "expo" : "Banks&Business",
         "company" : "Aloqanank",
         "position": "AloqaVentures direktori",
+        "role" : "VIP",
         "phone": ""
     },
     {

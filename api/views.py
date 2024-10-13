@@ -19,27 +19,45 @@ from .utils import *
 
 
 
+
+
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def feedback_form_view(request):
     if request.method == 'POST':
-        form = FeedbackForm(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                instance = form.save(commit=False)
+        try:
+            member_id = request.POST.get('member_id')
+            bank_id = request.POST.get('bank')
+            feedback_body = request.POST.get('feedback_body')
+            stars = request.POST.get('stars')
 
-                # Save feedback without an audio file
-                instance.save()
-                print(f"Feedback saved with id: {instance.id}")
-                return redirect('feedback_list_create')
-            except Exception as e:
-                print(f"Error saving feedback: {str(e)}")
-                return render(request, 'feedback_form.html', {'form': form, 'error': str(e)})
-        else:
-            print("Form validation failed.")
-    else:
-        form = FeedbackForm()
+            # Print values for debugging
+            print(f"Member ID: {member_id}, Bank ID: {bank_id}, Stars: {stars}")
 
-    return render(request, 'feedback_form.html', {'form': form})
+            if not stars or not member_id or not bank_id:
+                raise ValueError("Invalid data: All fields are required.")
+
+            # Save feedback
+            feedback = Feedback.objects.create(
+                member_id_id=member_id,
+                bank_id=bank_id,
+                feedback_body=feedback_body,
+                stars=int(stars)  # Ensure stars is saved as an integer
+            )
+
+            print(f"Feedback saved: {feedback}")
+            return redirect('feedback_form')
+
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            return render(request, 'feedback-form.html', {
+                'error_message': 'Произошла ошибка при отправке. Пожалуйста, попробуйте снова.',
+                'members': Member.objects.all(),
+                'banks': Bank.objects.all()
+            })
+
+    members = Member.objects.all()
+    banks = Bank.objects.all()
+    return render(request, 'feedback-form.html', {'members': members, 'banks': banks})
 
 
 
@@ -50,7 +68,12 @@ def feedback_form_view(request):
 
 
 
-class MemberListCreateView(generics.ListCreateAPIView):
+
+
+
+
+
+class MemberCreateView(generics.CreateAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
     # permission_classes = [IsAdminUser]  

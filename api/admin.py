@@ -10,7 +10,14 @@ class MemberAdmin(admin.ModelAdmin):
 
 
 
+
+@admin.register(Bank)
+class BankAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name','id') 
+
+
+
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'member_id', 'feedback_body','audio_feedback')
-
+    list_display = ('id', 'member_id', 'feedback_body','bank','stars')
