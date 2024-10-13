@@ -12,5 +12,5 @@ urlpatterns = [
     path('check-qr-code/', CheckQRCodeView.as_view(), name='check-qr-code'),
 
     path('feedback-form/', feedback_form_view, name='feedback_form'), 
-
+    path('banks/', bank_list_view, name='bank_list'),  # Route to bank list view
 ]

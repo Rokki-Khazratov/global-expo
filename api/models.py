@@ -98,26 +98,29 @@ class Member(models.Model):
         if not self.qr_code:
             self.create_qr_code_with_text() 
 
-class Bank (models.Model):
-    name = models.CharField(max_length=100) 
-    #add here: total_points
+class Bank(models.Model):
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
-    
+
+    # @property
+    # def total_points(self):
+    #     """Calculate the total points from related feedback."""
+    #     return self.feedback_set.aggregate(total=models.Sum('stars'))['total'] or 0
 
 
 
 
 class Feedback(models.Model):
     member_id = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
-    feedback_body= models.TextField(blank=True, null=True)
+    feedback_body = models.TextField(blank=True, null=True)
 
-    bank = models.ForeignKey(Bank,on_delete=models.CASCADE)
+    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     stars = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-
 
     def __str__(self):
         return f"{self.member_id.name}"
+
 
 

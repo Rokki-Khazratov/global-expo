@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Points</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #36454F;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        .bank {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .points {
+            font-weight: bold;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Bank Points</h1>
+        {% if banks %}
+            {% for bank in banks %}
+                <div class="bank">
+                    <span>{{ bank.name }}</span>
+                    <span class="points">{{ bank.total_points|default:"0" }} points</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No banks available.</p>
+        {% endif %}
+    </div>
+</body>
+
+</html>

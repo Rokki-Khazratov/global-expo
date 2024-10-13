@@ -1,8 +1,8 @@
 import requests
 import json
 
-url = "http://127.0.0.1:8000/api/members/"
-# url = "https://wauu.uz/api/members/"
+# url = "http://127.0.0.1:8000/api/members/"
+url = "https://wauu.uz/api/members/"
 
 with open("members.json", "r", encoding="utf-8") as file:
     data = json.load(file)

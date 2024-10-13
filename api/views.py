@@ -8,6 +8,8 @@ from django.conf import settings
 
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.decorators import user_passes_test
+from django.db.models import Sum
+
 
 
 from .models import *
@@ -16,12 +18,21 @@ from .forms import *
 from .utils import *
 
 
+@user_passes_test(lambda u: u.is_superuser)
+def bank_list_view(request):
+    # Annotate each bank with the total points and order them by points in descending order
+    banks = Bank.objects.annotate(total_points=Sum('feedback__stars')).order_by('-total_points')
+
+    # Debugging: Print each bank and its total points
+    for bank in banks:
+        print(f"{bank.name}: {bank.total_points or 0} points")
+
+    return render(request, 'bank_list.html', {'banks': banks})
 
 
 
 
-
-@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+@user_passes_test(lambda u: u.is_superuser)
 def feedback_form_view(request):
     if request.method == 'POST':
         try:
@@ -152,3 +163,5 @@ class CheckQRCodeView(APIView):
                 return Response({"exists": False}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
