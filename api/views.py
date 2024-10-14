@@ -32,6 +32,49 @@ def bank_list_view(request):
 
 
 
+# @user_passes_test(lambda u: u.is_superuser)
+# def feedback_form_view(request):
+#     if request.method == 'POST':
+#         try:
+#             member_id = request.POST.get('member_id')
+#             bank_id = request.POST.get('bank')
+#             feedback_body = request.POST.get('feedback_body')
+#             stars = request.POST.get('stars')
+
+#             # Print values for debugging
+#             print(f"Member ID: {member_id}, Bank ID: {bank_id}, Stars: {stars}")
+
+#             if not stars or not member_id or not bank_id:
+#                 raise ValueError("Invalid data: All fields are required.")
+
+#             # Save feedback
+#             feedback = Feedback.objects.create(
+#                 member_id_id=member_id,
+#                 bank_id=bank_id,
+#                 feedback_body=feedback_body,
+#                 stars=int(stars)  # Ensure stars is saved as an integer
+#             )
+
+#             print(f"Feedback saved: {feedback}")
+#             return redirect('feedback_form')
+
+#         except Exception as e:
+#             print(f"Error occurred: {e}")
+#             return render(request, 'feedback-form.html', {
+#                 'error_message': 'Произошла ошибка при отправке. Пожалуйста, попробуйте снова.',
+#                 'members': Member.objects.all(),
+#                 'banks': Bank.objects.all()
+#             })
+
+#     members = Member.objects.all()
+#     banks = Bank.objects.all()
+#     return render(request, 'feedback-form.html', {'members': members, 'banks': banks})
+
+
+
+
+# api/views.py
+    
 @user_passes_test(lambda u: u.is_superuser)
 def feedback_form_view(request):
     if request.method == 'POST':
@@ -40,24 +83,31 @@ def feedback_form_view(request):
             bank_id = request.POST.get('bank')
             feedback_body = request.POST.get('feedback_body')
             stars = request.POST.get('stars')
+            voter_id = request.user.username  # Use the voter's username or another unique ID
 
-            # Print values for debugging
-            print(f"Member ID: {member_id}, Bank ID: {bank_id}, Stars: {stars}")
+            # Check if the voter has already voted for this bank
+            if Feedback.objects.filter(voter_id=voter_id, bank_id=bank_id).exists():
+                raise ValueError("Вы уже голосовали за этот банк.")
 
-            if not stars or not member_id or not bank_id:
-                raise ValueError("Invalid data: All fields are required.")
-
-            # Save feedback
+            # Save the feedback if not already voted
             feedback = Feedback.objects.create(
                 member_id_id=member_id,
                 bank_id=bank_id,
                 feedback_body=feedback_body,
-                stars=int(stars)  # Ensure stars is saved as an integer
+                stars=int(stars),
+                voter_id=voter_id
             )
 
             print(f"Feedback saved: {feedback}")
             return redirect('feedback_form')
 
+        except ValueError as ve:
+            print(f"Validation error: {ve}")
+            return render(request, 'feedback-form.html', {
+                'error_message': str(ve),
+                'members': Member.objects.all(),
+                'banks': Bank.objects.all()
+            })
         except Exception as e:
             print(f"Error occurred: {e}")
             return render(request, 'feedback-form.html', {
@@ -66,13 +116,11 @@ def feedback_form_view(request):
                 'banks': Bank.objects.all()
             })
 
-    members = Member.objects.all()
-    banks = Bank.objects.all()
-    return render(request, 'feedback-form.html', {'members': members, 'banks': banks})
-
-
-
-
+    # GET request: render the form with participants and banks
+    return render(request, 'feedback-form.html', {
+        'members': Member.objects.all(),
+        'banks': Bank.objects.all()
+    })
 
 
 

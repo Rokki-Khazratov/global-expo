@@ -16,13 +16,11 @@ class MemberAdmin(admin.ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'member_id', 'feedback_body','bank','stars')
+    list_display = ('id', 'member_id','bank','stars','created_at')
+    search_fields = ('id','member_id','company')
+    list_filter = ('member_id','bank') 
 
 
-
-from django.contrib import admin
-from django.db.models import Sum
-from .models import Bank, Feedback
 
 @admin.register(Bank)
 class BankAdmin(admin.ModelAdmin):

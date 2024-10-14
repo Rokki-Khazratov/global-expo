@@ -157,14 +157,14 @@
 
 <body>
     <div class="form-container">
-        <h1>Оцените Банковское Обслуживание</h1>
+        <h1>Оцените Участников</h1>
 
 
 
         <form method="POST" enctype="multipart/form-data" id="feedback-form">
             {% csrf_token %}
 
-            <label for="member_id">ID Участника:</label>
+            <label for="member_id">Введите свой ID:</label>
             <select name="member_id" id="member_id" required>
                 <option value="" disabled selected>Выберите участника</option>
                 {% for member in members %}
@@ -172,7 +172,7 @@
                 {% endfor %}
             </select>
 
-            <label for="bank">Банк:</label>
+            <label for="bank">Выберите участника:</label>
             <select name="bank" id="bank" required>
                 <option value="" disabled selected>Выберите банк</option>
                 {% for bank in banks %}

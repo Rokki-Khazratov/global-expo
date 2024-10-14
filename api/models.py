@@ -118,6 +118,9 @@ class Feedback(models.Model):
 
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     stars = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return f"{self.member_id.name}"
