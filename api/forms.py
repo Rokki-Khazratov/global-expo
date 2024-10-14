@@ -1,19 +1,28 @@
+# api/forms.py
+
 from django import forms
-from .models import Feedback
+from .models import Member
 
-# forms.py
-class FeedbackForm(forms.ModelForm):
-    class Meta:
-        model = Feedback
-        fields = ['member_id', 'feedback_body']  # Убрал 'audio_feedback'
-
-        labels = {
-            'member_id': 'ID Участника',
-            'feedback_body': 'Текст отзыва',
-        }
+class FeedbackForm(forms.Form):
+    member_id = forms.ChoiceField(
+        label='ID Участника',
+        choices=[],  # We'll populate this in the view
+        widget=forms.Select(attrs={'id': 'member_id'})
+    )
+    feedback_body = forms.CharField(
+        label='Текст отзыва',
+        widget=forms.Textarea(attrs={'placeholder': 'Напишите ваш отзыв...'})
+    )
+    stars = forms.ChoiceField(
+        label='Оценка',
+        choices=[(i, str(i)) for i in range(1, 6)],
+        widget=forms.RadioSelect
+    )
 
     def __init__(self, *args, **kwargs):
         super(FeedbackForm, self).__init__(*args, **kwargs)
-        self.fields['member_id'].widget.attrs.update({'class': 'form-control'})
-        self.fields['feedback_body'].widget.attrs.update({'class': 'form-control'})
-
+        # Populate the choices dynamically from the database
+        self.fields['member_id'].choices = [
+            (member.id, f"{member.name} ({member.company}) - {member.id}")
+            for member in Member.objects.all()
+        ]

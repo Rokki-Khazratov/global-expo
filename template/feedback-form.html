@@ -168,7 +168,7 @@
             <select name="member_id" id="member_id" required>
                 <option value="" disabled selected>Выберите участника</option>
                 {% for member in members %}
-                <option value="{{ member.id }}">{{ member.name }} ({{ member.company }})</option>
+                <option value="{{ member.id }}">{{ member.id }}- {{ member.name }} ({{ member.company }})</option>
                 {% endfor %}
             </select>
 
