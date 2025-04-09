@@ -22,6 +22,18 @@ class ROLE_CHOISES(models.IntegerChoices):
     Visitor = 3, 'Visitor'
     NotGived = 4, 'Not gived'
 
+class POSITION_CHOICES(models.TextChoices):
+    DIRECTOR = 'DIR', 'Директор'
+    DEPUTY_DIRECTOR = 'DDIR', 'Заместитель директора'
+    HEAD_OF_DEPARTMENT = 'HOD', 'Начальник отдела'
+    MANAGER = 'MGR', 'Менеджер'
+    SENIOR_SPECIALIST = 'SSP', 'Ведущий специалист'
+    SPECIALIST = 'SPC', 'Специалист'
+    
+    INTERN = 'INT', 'Стажер'
+    STUDENT = 'STD', 'Студент'
+    OTHER = 'OTH', 'Другое'
+
 
 
 
@@ -29,14 +41,17 @@ class ROLE_CHOISES(models.IntegerChoices):
 
 class Member(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
-    company = models.CharField(max_length=200, verbose_name="Компания", blank=True, null=True) 
-    phone = models.CharField(max_length=15, verbose_name="Телефон", blank=True, null=True) 
-
-    position = models.CharField(max_length=250, verbose_name="Должность", blank=True)
-    role = models.IntegerField(choices=ROLE_CHOISES.choices,default=3)
-
-    qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True) 
-    registration_time = models.TimeField(auto_now_add=True, verbose_name="Дата регистрации")
+    company = models.CharField(max_length=200, verbose_name="Компания")
+    position = models.CharField(
+        max_length=4,
+        choices=POSITION_CHOICES.choices,
+        verbose_name="Должность",
+        default=POSITION_CHOICES.OTHER
+    )
+    phone = models.CharField(max_length=15, verbose_name="Телефон")
+    role = models.IntegerField(choices=ROLE_CHOISES.choices, default=3)
+    qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True)
+    registration_time = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время регистрации")
 
     def __str__(self):
         return f"{self.name}  ({self.company})"
