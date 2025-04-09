@@ -6,10 +6,14 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from PIL import Image
 from django.conf import settings
 from django.http import JsonResponse
+from django.contrib.auth import authenticate, login
+from django.urls import reverse
 
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Sum
+from django.db.models import Q
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 
 
@@ -305,6 +309,74 @@ def view_qr_code(request, member_id):
     return render(request, 'view_qr.html', {
         'member': member,
         'qr_code_url': member.qr_code.url if member.qr_code else None
+    })
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            return redirect('company_list')  # Redirect to company list after successful login
+        else:
+            return render(request, 'login.html', {
+                'error_message': 'Неверное имя пользователя или пароль'
+            })
+    
+    return render(request, 'login.html')
+
+@user_passes_test(lambda u: u.is_superuser)
+def members_list_view(request):
+    # Get all members
+    members = Member.objects.all().order_by('name')
+    
+    # Get filter parameters
+    company_filter = request.GET.get('company')
+    position_filter = request.GET.get('position')
+    role_filter = request.GET.get('role')
+    search_query = request.GET.get('search')
+    
+    # Apply filters
+    if company_filter:
+        members = members.filter(company__id=company_filter)
+    if position_filter:
+        members = members.filter(position=position_filter)
+    if role_filter:
+        members = members.filter(role=role_filter)
+    if search_query:
+        members = members.filter(
+            Q(name__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(company__name__icontains=search_query)
+        )
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(members, 2)  
+    
+    try:
+        members_page = paginator.page(page)
+    except PageNotAnInteger:
+        members_page = paginator.page(1)
+    except EmptyPage:
+        members_page = paginator.page(paginator.num_pages)
+    
+    # Get unique companies for filter
+    companies = Company.objects.all().order_by('name')
+    
+    return render(request, 'members_list.html', {
+        'members': members_page,
+        'companies': companies,
+        'positions': POSITION_CHOICES.choices,
+        'roles': ROLE_CHOISES.choices,
+        'current_filters': {
+            'company': company_filter,
+            'position': position_filter,
+            'role': role_filter,
+            'search': search_query
+        }
     })
 
 

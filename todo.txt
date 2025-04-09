@@ -4,6 +4,6 @@
 4. Positions dropdown --DONE
 5. QR code new tesing --DONE
 6. QR code auto print idea --DONE
-7. All members GET page for admins
+7. All members GET page for admins --DONE
 
 P.S Feedbacks comment

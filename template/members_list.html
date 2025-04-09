@@ -1,0 +1,283 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список участников</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        select, input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-box {
+            grid-column: 1 / -1;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .members-table th,
+        .members-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .members-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .members-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .clear-filters {
+            background-color: #dc3545;
+            margin-left: 10px;
+        }
+
+        .clear-filters:hover {
+            background-color: #c82333;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .pagination .current {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .pagination a:hover {
+            background-color: #f5f5f5;
+        }
+
+        .pagination .disabled {
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Список участников</h1>
+        
+        <form method="GET" action="{% url 'members_list' %}">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="company">Компания:</label>
+                    <select name="company" id="company">
+                        <option value="">Все компании</option>
+                        {% for company in companies %}
+                            <option value="{{ company.id }}" {% if current_filters.company == company.id|stringformat:"s" %}selected{% endif %}>
+                                {{ company.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="position">Должность:</label>
+                    <select name="position" id="position">
+                        <option value="">Все должности</option>
+                        {% for value, label in positions %}
+                            <option value="{{ value }}" {% if current_filters.position == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="role">Роль:</label>
+                    <select name="role" id="role">
+                        <option value="">Все роли</option>
+                        {% for value, label in roles %}
+                            <option value="{{ value }}" {% if current_filters.role == value|stringformat:"s" %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group search-box">
+                    <label for="search">Поиск:</label>
+                    <input type="text" name="search" id="search" placeholder="Поиск по имени, телефону или компании" 
+                           value="{{ current_filters.search|default:'' }}">
+                </div>
+            </div>
+
+            <div class="buttons-container">
+                <button type="submit">Применить фильтры</button>
+                <button type="button" class="clear-filters" onclick="window.location.href='{% url 'members_list' %}'">
+                    Сбросить фильтры
+                </button>
+            </div>
+        </form>
+
+        {% if members %}
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ф.И.О.</th>
+                        <th>Компания</th>
+                        <th>Должность</th>
+                        <th>Телефон</th>
+                        <th>Роль</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr>
+                            <td>{{ member.id }}</td>
+                            <td>{{ member.name }}</td>
+                            <td>{{ member.company.name }}</td>
+                            <td>{{ member.get_position_display }}</td>
+                            <td>{{ member.phone }}</td>
+                            <td>{{ member.get_role_display }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination-info">
+                Показано {{ members.start_index }}-{{ members.end_index }} из {{ members.paginator.count }} участников
+            </div>
+
+            {% if members.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if members.has_previous %}
+                    <a href="?page=1{% if request.GET.company %}&company={{ request.GET.company }}{% endif %}{% if request.GET.position %}&position={{ request.GET.position }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo; Первая</a>
+                    <a href="?page={{ members.previous_page_number }}{% if request.GET.company %}&company={{ request.GET.company }}{% endif %}{% if request.GET.position %}&position={{ request.GET.position }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Предыдущая</a>
+                {% else %}
+                    <span class="disabled">&laquo; Первая</span>
+                    <span class="disabled">Предыдущая</span>
+                {% endif %}
+
+                {% for num in members.paginator.page_range %}
+                    {% if members.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% elif num > members.number|add:'-3' and num < members.number|add:'3' %}
+                        <a href="?page={{ num }}{% if request.GET.company %}&company={{ request.GET.company }}{% endif %}{% if request.GET.position %}&position={{ request.GET.position }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if members.has_next %}
+                    <a href="?page={{ members.next_page_number }}{% if request.GET.company %}&company={{ request.GET.company }}{% endif %}{% if request.GET.position %}&position={{ request.GET.position }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Следующая</a>
+                    <a href="?page={{ members.paginator.num_pages }}{% if request.GET.company %}&company={{ request.GET.company }}{% endif %}{% if request.GET.position %}&position={{ request.GET.position }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Последняя &raquo;</a>
+                {% else %}
+                    <span class="disabled">Следующая</span>
+                    <span class="disabled">Последняя &raquo;</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="no-results">
+                Участники не найдены
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html> 
