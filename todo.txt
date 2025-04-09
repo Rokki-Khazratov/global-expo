@@ -1,8 +1,8 @@
 1. All fields are required --DONE
-2. Add new member page 
-3. add_member page logic = phone_number, dropdown with all companies
+2. Add new member page --DONE
+3. add_member page logic = phone_number, dropdown with all companies --DONE
 4. Positions dropdown --DONE
-5. QR code new desing 
+5. QR code new tesing 
 6. QR code auto print idea
 7. All members GET page for admins
 

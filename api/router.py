@@ -11,6 +11,9 @@ urlpatterns = [
     path('check-member/', CheckMemberAPIView.as_view(), name='check-member'),
     path('check-qr-code/', CheckQRCodeView.as_view(), name='check-qr-code'),
 
-    path('feedback-form/', feedback_form_view, name='feedback_form'), 
-    path('banks/', bank_list_view, name='bank_list'),  # Route to bank list view
+    path('companies/', company_list_view, name='company_list'),
+    path('feedback/', feedback_form, name='feedback_form'),
+    path('vote/', vote, name='vote'),
+    
+    path('add-member/', add_member, name='add_member'),
 ]

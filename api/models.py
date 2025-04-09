@@ -3,8 +3,6 @@ import qrcode
 from django.db import models
 from django.conf import settings
 from PIL import Image, ImageDraw, ImageFont
-from PIL import Image, ImageDraw, ImageFont
-import qrcode
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
@@ -29,7 +27,7 @@ class POSITION_CHOICES(models.TextChoices):
     MANAGER = 'MGR', 'Менеджер'
     SENIOR_SPECIALIST = 'SSP', 'Ведущий специалист'
     SPECIALIST = 'SPC', 'Специалист'
-    
+    JUNIOR_SPECIALIST = 'JSP', 'Младший специалист'
     INTERN = 'INT', 'Стажер'
     STUDENT = 'STD', 'Студент'
     OTHER = 'OTH', 'Другое'
@@ -39,9 +37,15 @@ class POSITION_CHOICES(models.TextChoices):
 
 #!models
 
+class Company(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 class Member(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
-    company = models.CharField(max_length=200, verbose_name="Компания")
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="Компания")
     position = models.CharField(
         max_length=4,
         choices=POSITION_CHOICES.choices,
@@ -51,7 +55,7 @@ class Member(models.Model):
     phone = models.CharField(max_length=15, verbose_name="Телефон")
     role = models.IntegerField(choices=ROLE_CHOISES.choices, default=3)
     qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True)
-    registration_time = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время регистрации")
+    registration_time = models.TimeField(auto_now_add=True, verbose_name="Дата регистрации")
 
     def __str__(self):
         return f"{self.name}  ({self.company})"
@@ -66,7 +70,6 @@ class Member(models.Model):
 
         qr_size = (int(width * 0.5), int(width * 0.5))  # Maintain the same width for height
         img.paste(qr.resize(qr_size), (int((width - qr_size[0]) / 2), int((height - qr_size[1]) / 2)))  # Center the QR code
-
 
         try:
             font = ImageFont.truetype('DejaVuSans-Bold.ttf', 40)  # Use a different bold font
@@ -88,10 +91,8 @@ class Member(models.Model):
 
         # Bottom text
         id_bbox = draw.textbbox((0, 0), id_text, font=font)
-        id_width = id_bbox[2] - id_bbox[0]  # width
+        id_width = id_bbox[2] - id_bbox[0]
         draw.text(((width - id_width) / 2, height - id_bbox[3] - 10), id_text, fill="black", font=font)  # Centered at the bottom
-
-
 
         qr_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes', 'members')
         if not os.path.exists(qr_dir):
@@ -103,33 +104,17 @@ class Member(models.Model):
         self.qr_code = f'qr_codes/members/member-{self.id}.png'
         self.save()
 
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  
-
         if not self.qr_code:
-            self.create_qr_code_with_text() 
-
-class Bank(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
-
-
-
+            self.create_qr_code_with_text()
 
 class Feedback(models.Model):
     member_id = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="tickets")
     feedback_body = models.TextField(blank=True, null=True)
-
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     stars = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    
     created_at = models.DateTimeField(auto_now_add=True)
-
 
     def __str__(self):
         return f"{self.member_id.name}"

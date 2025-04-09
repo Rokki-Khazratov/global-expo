@@ -1,0 +1,403 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Добавление нового участника</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-image: url("{% static 'images/fon-reg.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      /* Blur background with pseudo-element */
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: inherit;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: blur(8px);
+        opacity: 0.8;
+        z-index: -1;
+      }
+
+      .form-container {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 4%;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        max-width: 500px;
+        width: 80%;
+      }
+
+      h1 {
+        color: #4caf50;
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 18px;
+      }
+
+      .company-select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 18px;
+        background-color: white;
+        cursor: pointer;
+      }
+
+      .company-select option[value="new"] {
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      .new-company-input input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #4caf50;
+        border-radius: 8px;
+        font-size: 18px;
+        margin-bottom: 0;
+      }
+
+      .phone-input-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .phone-prefix {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background-color: #f5f5f5;
+        border: 1px solid #ccc;
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        font-size: 18px;
+      }
+
+      .phone-input {
+        flex-grow: 1;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .company-container {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .company-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 18px;
+      }
+
+      .company-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 0 0 8px 8px;
+        z-index: 10;
+        display: none;
+      }
+
+      .company-option {
+        padding: 10px;
+        cursor: pointer;
+      }
+
+      .company-option:hover {
+        background-color: #f5f5f5;
+      }
+
+      .add-company-option {
+        padding: 10px;
+        background-color: #e8f5e9;
+        font-weight: bold;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .add-company-option:hover {
+        background-color: #c8e6c9;
+      }
+
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        width: 400px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-content h2 {
+        color: #4caf50;
+      }
+
+      .error-message {
+        color: #f44336;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <h1>Добавление нового участника</h1>
+
+      {% if error_message %}
+      <div class="error-message">{{ error_message }}</div>
+      {% endif %}
+
+      <form method="POST" id="add-member-form">
+        {% csrf_token %}
+
+        <label for="name">Ф. И. О.:</label>
+        <input
+          type="text"
+          name="name"
+          id="name"
+          required
+          placeholder="Введите Ф. И. О."
+        />
+
+        <label for="phone">Телефон:</label>
+        <div class="phone-input-container">
+          <div class="phone-prefix">+998</div>
+          <input
+            type="text"
+            name="phone"
+            id="phone"
+            class="phone-input"
+            required
+            placeholder="97 123 45 67"
+            maxlength="11"
+          />
+        </div>
+
+        <label for="company">Компания:</label>
+        <div class="company-container">
+          <select name="company" id="company" class="company-select" required>
+            <option value="" disabled selected>Выберите компанию</option>
+            {% for company in companies %}
+            <option value="{{ company.name }}">{{ company.name }}</option>
+            {% endfor %}
+            <option value="new">+ Создать новую компанию</option>
+          </select>
+          <div
+            class="new-company-input"
+            style="display: none; margin-top: 10px"
+          >
+            <input
+              type="text"
+              id="new-company"
+              placeholder="Введите название новой компании"
+              class="company-input"
+            />
+          </div>
+        </div>
+
+        <label for="position">Должность:</label>
+        <select name="position" id="position" required>
+          <option value="" disabled selected>Выберите должность</option>
+          {% for value, label in positions %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="role">Роль:</label>
+        <select name="role" id="role" required>
+          <option value="" disabled selected>Выберите роль</option>
+          {% for value, label in roles %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit">Добавить участника</button>
+      </form>
+    </div>
+
+    <div id="successModal" class="modal">
+      <div class="modal-content">
+        <h2>Участник успешно добавлен!</h2>
+        <p>Страница обновится через <span id="countdown">5</span> секунд.</p>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const phoneInput = document.getElementById("phone");
+        const companySelect = document.getElementById("company");
+        const newCompanyInput = document.getElementById("new-company");
+        const newCompanyContainer =
+          document.querySelector(".new-company-input");
+        const form = document.getElementById("add-member-form");
+        const successModal = document.getElementById("successModal");
+        const countdownElement = document.getElementById("countdown");
+
+        // Phone input formatting
+        phoneInput.addEventListener("input", function (e) {
+          let value = e.target.value.replace(/\D/g, "");
+
+          if (value.length > 9) {
+            value = value.substring(0, 9);
+          }
+
+          // Format: XX XXX XX XX
+          if (value.length >= 2)
+            value =
+              value.substring(0, 2) +
+              (value.length > 2 ? " " : "") +
+              value.substring(2);
+          if (value.length >= 6)
+            value =
+              value.substring(0, 6) +
+              (value.length > 5 ? " " : "") +
+              value.substring(6);
+          if (value.length >= 9)
+            value =
+              value.substring(0, 9) +
+              (value.length > 8 ? " " : "") +
+              value.substring(9);
+
+          e.target.value = value;
+        });
+
+        // Company select handling
+        companySelect.addEventListener("change", function () {
+          if (this.value === "new") {
+            newCompanyContainer.style.display = "block";
+            newCompanyInput.required = true;
+          } else {
+            newCompanyContainer.style.display = "none";
+            newCompanyInput.required = false;
+          }
+        });
+
+        // Form submission
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(form);
+
+          // Format phone number for submission (remove spaces)
+          const phoneNumber = formData.get("phone").replace(/\s/g, "");
+          formData.set("phone", "+998" + phoneNumber);
+
+          // Handle company selection
+          if (companySelect.value === "new") {
+            formData.set("company", newCompanyInput.value);
+          }
+
+          fetch('{% url "add_member" %}', {
+            method: "POST",
+            body: formData,
+            headers: {
+              "X-CSRFToken": document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+              ).value,
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                successModal.style.display = "block";
+
+                // Countdown and redirect
+                let countdown = 5;
+                const countdownInterval = setInterval(function () {
+                  countdown--;
+                  countdownElement.textContent = countdown;
+
+                  if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = data.redirect_url;
+                  }
+                }, 1000);
+              } else {
+                alert(
+                  data.error || "Произошла ошибка при добавлении участника"
+                );
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Произошла ошибка при отправке формы");
+            });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Company Points</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .company {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        margin: 10px 0;
+        background-color: #f5f5f5;
+        border-radius: 5px;
+      }
+      .points {
+        font-weight: bold;
+        color: #2196f3;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Company Points</h1>
+    {% if companies %} {% for company in companies %}
+    <div class="company">
+      <span>{{ company.name }}</span>
+      <span class="points">{{ company.total_points|default:"0" }} points</span>
+    </div>
+    {% endfor %} {% else %}
+    <p>No companies available.</p>
+    {% endif %}
+  </body>
+</html>
