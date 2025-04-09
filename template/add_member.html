@@ -102,20 +102,12 @@
         margin-bottom: 20px;
       }
 
-      .phone-prefix {
-        display: flex;
-        align-items: center;
-        padding: 12px;
-        background-color: #f5f5f5;
-        border: 1px solid #ccc;
-        border-right: none;
-        border-radius: 8px 0 0 8px;
-        font-size: 18px;
-      }
-
       .phone-input {
-        flex-grow: 1;
-        border-radius: 0 8px 8px 0;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 18px;
       }
 
       .company-container {
@@ -235,15 +227,14 @@
 
         <label for="phone">Телефон:</label>
         <div class="phone-input-container">
-          <div class="phone-prefix">+998</div>
           <input
             type="text"
             name="phone"
             id="phone"
             class="phone-input"
             required
-            placeholder="97 123 45 67"
-            maxlength="11"
+            placeholder="+998 97 123 45 67"
+            value="+998 "
           />
         </div>
 
@@ -309,30 +300,83 @@
 
         // Phone input formatting
         phoneInput.addEventListener("input", function (e) {
-          let value = e.target.value.replace(/\D/g, "");
+          let value = e.target.value;
+          let cursorPosition = e.target.selectionStart;
 
-          if (value.length > 9) {
-            value = value.substring(0, 9);
+          // Allow only digits and plus sign
+          value = value.replace(/[^\d+]/g, "");
+
+          // Format the number
+          if (value.length > 0) {
+            if (value.startsWith("+")) {
+              // Handle international format
+              let countryCode = value.slice(0, 4); // +998 or other country code
+              let restNumber = value.slice(4);
+
+              let formattedNumber = countryCode;
+
+              // Format the rest of the number
+              if (restNumber.length > 0) {
+                formattedNumber += " ";
+                // First group (2 digits)
+                formattedNumber += restNumber.slice(0, 2);
+
+                if (restNumber.length > 2) {
+                  formattedNumber += " ";
+                  // Second group (3 digits)
+                  formattedNumber += restNumber.slice(2, 5);
+
+                  if (restNumber.length > 5) {
+                    formattedNumber += " ";
+                    // Third group (2 digits)
+                    formattedNumber += restNumber.slice(5, 7);
+
+                    if (restNumber.length > 7) {
+                      formattedNumber += " ";
+                      // Fourth group (2 digits)
+                      formattedNumber += restNumber.slice(7, 9);
+                    }
+                  }
+                }
+              }
+
+              value = formattedNumber;
+            } else {
+              // Handle local format (without country code)
+              if (value.length > 0) {
+                let formattedNumber = value.slice(0, 2);
+
+                if (value.length > 2) {
+                  formattedNumber += " " + value.slice(2, 5);
+
+                  if (value.length > 5) {
+                    formattedNumber += " " + value.slice(5, 7);
+
+                    if (value.length > 7) {
+                      formattedNumber += " " + value.slice(7, 9);
+                    }
+                  }
+                }
+                value = formattedNumber;
+              }
+            }
           }
 
-          // Format: XX XXX XX XX
-          if (value.length >= 2)
-            value =
-              value.substring(0, 2) +
-              (value.length > 2 ? " " : "") +
-              value.substring(2);
-          if (value.length >= 6)
-            value =
-              value.substring(0, 6) +
-              (value.length > 5 ? " " : "") +
-              value.substring(6);
-          if (value.length >= 9)
-            value =
-              value.substring(0, 9) +
-              (value.length > 8 ? " " : "") +
-              value.substring(9);
-
           e.target.value = value;
+
+          // Calculate new cursor position
+          let newPosition = cursorPosition;
+          if (value.length > 4) {
+            // After country code
+            if (cursorPosition > 4)
+              newPosition =
+                cursorPosition + Math.floor((cursorPosition - 4) / 2);
+          }
+
+          // Set cursor position after formatting
+          setTimeout(() => {
+            e.target.setSelectionRange(newPosition, newPosition);
+          }, 0);
         });
 
         // Company select handling
@@ -353,8 +397,12 @@
           const formData = new FormData(form);
 
           // Format phone number for submission (remove spaces)
-          const phoneNumber = formData.get("phone").replace(/\s/g, "");
-          formData.set("phone", "+998" + phoneNumber);
+          let phoneNumber = formData.get("phone").replace(/\s/g, "");
+          // If no country code provided, add +998
+          if (!phoneNumber.startsWith("+")) {
+            phoneNumber = "+998" + phoneNumber;
+          }
+          formData.set("phone", phoneNumber);
 
           // Handle company selection
           if (companySelect.value === "new") {

@@ -240,14 +240,24 @@ def add_member(request):
                 })
             
             # Validate phone number format
-            if not phone.startswith('+998') or len(phone.replace('+998', '')) != 9:
+            if not phone.startswith('+'):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Номер телефона должен начинаться с +'
+                })
+
+            # Remove all non-digit characters except +
+            phone_digits = ''.join(c for c in phone if c.isdigit() or c == '+')
+            
+            # Check if phone number has correct length (country code + number)
+            if len(phone_digits) < 12 or len(phone_digits) > 15:
                 return JsonResponse({
                     'success': False,
                     'error': 'Неверный формат номера телефона'
                 })
             
             # Check if phone number already exists
-            if Member.objects.filter(phone=phone).exists():
+            if Member.objects.filter(phone=phone_digits).exists():
                 return JsonResponse({
                     'success': False,
                     'error': 'Участник с таким номером телефона уже существует'
@@ -256,10 +266,10 @@ def add_member(request):
             # Get or create company
             company, created = Company.objects.get_or_create(name=company_name.strip())
             
-            # Create new member
+            # Create new member with cleaned phone number
             member = Member.objects.create(
                 name=name,
-                phone=phone,
+                phone=phone_digits,
                 company=company,
                 position=position,
                 role=int(role)
