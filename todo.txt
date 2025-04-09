@@ -6,4 +6,8 @@
 6. QR code auto print idea --DONE
 7. All members GET page for admins --DONE
 
+8.Position as a Modle
+9.check security
+10.test with xprinter
+
 P.S Feedbacks comment
