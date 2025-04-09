@@ -22,16 +22,13 @@ class ROLE_CHOISES(models.IntegerChoices):
     Visitor = 3, 'Visitor'
     NotGived = 4, 'Not gived'
 
-class EXPO_TYPE(models.IntegerChoices):
-    Banks = 1, 'Banks&Business'
-    UzCharm = 2, 'UzCharmEURASIA'
+
 
 
 #!models
 
 class Member(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
-    expo = models.IntegerField(choices=EXPO_TYPE.choices,default=1)
     company = models.CharField(max_length=200, verbose_name="Компания", blank=True, null=True) 
     phone = models.CharField(max_length=15, verbose_name="Телефон", blank=True, null=True) 
 
@@ -104,10 +101,7 @@ class Bank(models.Model):
     def __str__(self):
         return self.name
 
-    # @property
-    # def total_points(self):
-    #     """Calculate the total points from related feedback."""
-    #     return self.feedback_set.aggregate(total=models.Sum('stars'))['total'] or 0
+
 
 
 

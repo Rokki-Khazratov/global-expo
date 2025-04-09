@@ -5,19 +5,17 @@ from django.db.models import Sum
 
 @admin.register(Member)
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ('name', 'id','company', 'phone', 'position', 'expo', 'role', 'registration_time')
+    list_display = ('name', 'id','company', 'phone', 'position', 'role', 'registration_time')
     search_fields = ('name','id','company') 
-    list_filter = ('expo', 'role') 
-
-
-
-
+    list_filter = ('role','company') 
 
 
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'member_id','bank','stars','created_at')
+    list_display = ('id', 'member_id','bank','stars',
+                    #'created_at'
+                    )
     search_fields = ('id','member_id','company')
     list_filter = ('member_id','bank') 
 
