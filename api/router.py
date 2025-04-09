@@ -16,4 +16,5 @@ urlpatterns = [
     path('vote/', vote, name='vote'),
     
     path('add-member/', add_member, name='add_member'),
+    path('qr-code/<int:member_id>/', view_qr_code, name='view_qr_code'),
 ]

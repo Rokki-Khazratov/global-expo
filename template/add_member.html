@@ -173,31 +173,6 @@
         background-color: #45a049;
       }
 
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-
-      .modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 20px;
-        border-radius: 15px;
-        text-align: center;
-        width: 400px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-      }
-
-      .modal-content h2 {
-        color: #4caf50;
-      }
-
       .error-message {
         color: #f44336;
         margin-bottom: 15px;
@@ -280,13 +255,6 @@
       </form>
     </div>
 
-    <div id="successModal" class="modal">
-      <div class="modal-content">
-        <h2>Участник успешно добавлен!</h2>
-        <p>Страница обновится через <span id="countdown">5</span> секунд.</p>
-      </div>
-    </div>
-
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const phoneInput = document.getElementById("phone");
@@ -295,8 +263,15 @@
         const newCompanyContainer =
           document.querySelector(".new-company-input");
         const form = document.getElementById("add-member-form");
-        const successModal = document.getElementById("successModal");
-        const countdownElement = document.getElementById("countdown");
+
+        // Reset form on page load/refresh
+        window.onload = function () {
+          form.reset();
+          phoneInput.value = "+998 ";
+          if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+          }
+        };
 
         // Phone input formatting
         phoneInput.addEventListener("input", function (e) {
@@ -421,19 +396,8 @@
             .then((response) => response.json())
             .then((data) => {
               if (data.success) {
-                successModal.style.display = "block";
-
-                // Countdown and redirect
-                let countdown = 5;
-                const countdownInterval = setInterval(function () {
-                  countdown--;
-                  countdownElement.textContent = countdown;
-
-                  if (countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    window.location.href = data.redirect_url;
-                  }
-                }, 1000);
+                // Immediate redirect
+                window.location.href = data.redirect_url;
               } else {
                 alert(
                   data.error || "Произошла ошибка при добавлении участника"

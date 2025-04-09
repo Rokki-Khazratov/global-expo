@@ -62,42 +62,50 @@ class Member(models.Model):
 
     def create_qr_code_with_text(self):
         # Create QR code
-        qr_data = f"{self.id}"
+        qr_data = f"{self.id}"  # Keep only ID in QR data
         qr = qrcode.make(qr_data)
 
         width, height = 708, 414  # 6 cm * 300 dpi and 4 cm * 300 dpi
         img = Image.new('RGB', (width, height), 'white')
 
-        qr_size = (int(width * 0.5), int(width * 0.5))  # Maintain the same width for height
-        img.paste(qr.resize(qr_size), (int((width - qr_size[0]) / 2), int((height - qr_size[1]) / 2)))  # Center the QR code
+        # Make QR code slightly smaller to accommodate larger text
+        qr_size = (int(width * 0.45), int(width * 0.45))
+        qr_pos_x = int((width - qr_size[0]) / 2)
+        qr_pos_y = int((height - qr_size[1]) / 2) + 20  # Move QR down a bit
+        img.paste(qr.resize(qr_size), (qr_pos_x, qr_pos_y))
 
         try:
-            font = ImageFont.truetype('DejaVuSans-Bold.ttf', 40)  # Use a different bold font
+            # Try to use a bold font with larger size for name
+            font_path = os.path.join(settings.BASE_DIR, 'static', 'fonts', 'DejaVuSans-Bold.ttf')
+            name_font = ImageFont.truetype(font_path, 48)  # Bigger size for name
         except IOError:
-            print("error")
-            font = ImageFont.load_default()
+            print("Default font will be used")
+            name_font = ImageFont.load_default()
 
         # Create a drawing context
         draw = ImageDraw.Draw(img)
 
-        # Calculate text size and position
-        name_text = self.name
-        id_text = str(self.id)
+        # Draw name at the top
+        name_text = self.name.upper()  # Make name uppercase
+        name_bbox = draw.textbbox((0, 0), name_text, font=name_font)
+        name_width = name_bbox[2] - name_bbox[0]
+        name_height = name_bbox[3] - name_bbox[1]
+        
+        # Position name text higher up
+        name_y = 20  # Fixed position from top
+        draw.text(
+            ((width - name_width) / 2, name_y),
+            name_text,
+            fill="black",
+            font=name_font
+        )
 
-        # Top text
-        name_bbox = draw.textbbox((0, 0), name_text, font=font)
-        name_width = name_bbox[2] - name_bbox[0]  # width
-        draw.text(((width - name_width) / 2, 10), name_text, fill="black", font=font) 
-
-        # Bottom text
-        id_bbox = draw.textbbox((0, 0), id_text, font=font)
-        id_width = id_bbox[2] - id_bbox[0]
-        draw.text(((width - id_width) / 2, height - id_bbox[3] - 10), id_text, fill="black", font=font)  # Centered at the bottom
-
+        # Create directory if it doesn't exist
         qr_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes', 'members')
         if not os.path.exists(qr_dir):
             os.makedirs(qr_dir)
 
+        # Save the image
         qr_image_path = os.path.join(qr_dir, f'member-{self.id}.png')
         img.save(qr_image_path)
 

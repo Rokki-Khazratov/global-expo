@@ -2,8 +2,8 @@
 2. Add new member page --DONE
 3. add_member page logic = phone_number, dropdown with all companies --DONE
 4. Positions dropdown --DONE
-5. QR code new tesing 
-6. QR code auto print idea
+5. QR code new tesing --DONE
+6. QR code auto print idea --DONE
 7. All members GET page for admins
 
 P.S Feedbacks comment

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status,generics
@@ -280,7 +280,7 @@ def add_member(request):
             
             return JsonResponse({
                 'success': True,
-                'redirect_url': '/admin/api/member/'
+                'redirect_url': f'/qr-code/{member.id}/'
             })
             
         except Exception as e:
@@ -298,6 +298,13 @@ def add_member(request):
         'companies': companies,
         'positions': positions,
         'roles': roles
+    })
+
+def view_qr_code(request, member_id):
+    member = get_object_or_404(Member, id=member_id)
+    return render(request, 'view_qr.html', {
+        'member': member,
+        'qr_code_url': member.qr_code.url if member.qr_code else None
     })
 
 
