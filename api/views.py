@@ -227,17 +227,70 @@ def vote(request):
     })
 
 
+@user_passes_test(lambda u: u.is_superuser)
+def members_list_view(request):
+    # Get all members
+    members = Member.objects.all().order_by('name')
+    
+    # Get filter parameters
+    company_filter = request.GET.get('company')
+    position_filter = request.GET.get('position')
+    role_filter = request.GET.get('role')
+    search_query = request.GET.get('search')
+    
+    # Apply filters
+    if company_filter:
+        members = members.filter(company__id=company_filter)
+    if position_filter:
+        members = members.filter(position__id=position_filter)
+    if role_filter:
+        members = members.filter(role=role_filter)
+    if search_query:
+        members = members.filter(
+            Q(name__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(company__name__icontains=search_query)
+        )
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(members, 50)
+    
+    try:
+        members_page = paginator.page(page)
+    except PageNotAnInteger:
+        members_page = paginator.page(1)
+    except EmptyPage:
+        members_page = paginator.page(paginator.num_pages)
+    
+    # Get unique companies and positions for filters
+    companies = Company.objects.all().order_by('name')
+    positions = Position.objects.all().order_by('name')
+    
+    return render(request, 'members_list.html', {
+        'members': members_page,
+        'companies': companies,
+        'positions': positions,
+        'roles': ROLE_CHOISES.choices,
+        'current_filters': {
+            'company': company_filter,
+            'position': position_filter,
+            'role': role_filter,
+            'search': search_query
+        }
+    })
+
 def add_member(request):
     if request.method == 'POST':
         try:
             name = request.POST.get('name')
             phone = request.POST.get('phone')
             company_name = request.POST.get('company')
-            position = request.POST.get('position')
+            position_id = request.POST.get('position')
             role = request.POST.get('role')
             
             # Check if all required fields are provided
-            if not all([name, phone, company_name, position, role]):
+            if not all([name, phone, company_name, position_id, role]):
                 return JsonResponse({
                     'success': False,
                     'error': 'Все поля обязательны для заполнения'
@@ -270,6 +323,15 @@ def add_member(request):
             # Get or create company
             company, created = Company.objects.get_or_create(name=company_name.strip())
             
+            # Get position
+            try:
+                position = Position.objects.get(id=position_id)
+            except Position.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Выбранная должность не существует'
+                })
+            
             # Create new member with cleaned phone number
             member = Member.objects.create(
                 name=name,
@@ -295,7 +357,7 @@ def add_member(request):
     
     # GET request - render the form
     companies = Company.objects.all().order_by('name')
-    positions = POSITION_CHOICES.choices
+    positions = Position.objects.all().order_by('name')
     roles = ROLE_CHOISES.choices
     
     return render(request, 'add_member.html', {
@@ -326,57 +388,5 @@ def login_view(request):
             })
     
     return render(request, 'login.html')
-
-@user_passes_test(lambda u: u.is_superuser)
-def members_list_view(request):
-    # Get all members
-    members = Member.objects.all().order_by('name')
-    
-    # Get filter parameters
-    company_filter = request.GET.get('company')
-    position_filter = request.GET.get('position')
-    role_filter = request.GET.get('role')
-    search_query = request.GET.get('search')
-    
-    # Apply filters
-    if company_filter:
-        members = members.filter(company__id=company_filter)
-    if position_filter:
-        members = members.filter(position=position_filter)
-    if role_filter:
-        members = members.filter(role=role_filter)
-    if search_query:
-        members = members.filter(
-            Q(name__icontains=search_query) |
-            Q(phone__icontains=search_query) |
-            Q(company__name__icontains=search_query)
-        )
-    
-    # Pagination
-    page = request.GET.get('page', 1)
-    paginator = Paginator(members, 2)  
-    
-    try:
-        members_page = paginator.page(page)
-    except PageNotAnInteger:
-        members_page = paginator.page(1)
-    except EmptyPage:
-        members_page = paginator.page(paginator.num_pages)
-    
-    # Get unique companies for filter
-    companies = Company.objects.all().order_by('name')
-    
-    return render(request, 'members_list.html', {
-        'members': members_page,
-        'companies': companies,
-        'positions': POSITION_CHOICES.choices,
-        'roles': ROLE_CHOISES.choices,
-        'current_filters': {
-            'company': company_filter,
-            'position': position_filter,
-            'role': role_filter,
-            'search': search_query
-        }
-    })
 
 

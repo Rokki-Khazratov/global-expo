@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Member, Company, Feedback
+from .models import Member, Company, Feedback, Position
 from django.db.models import Sum
 
 
@@ -27,4 +27,11 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('id', 'member_id', 'company', 'stars', 'created_at')
     list_filter = ('member_id', 'company')
     search_fields = ('member_id__name', 'company__name')
+
+
+@admin.register(Position)
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code')
+    search_fields = ('name', 'code')
+    ordering = ('name',)
 

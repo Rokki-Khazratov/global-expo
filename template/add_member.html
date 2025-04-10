@@ -238,8 +238,8 @@
         <label for="position">Должность:</label>
         <select name="position" id="position" required>
           <option value="" disabled selected>Выберите должность</option>
-          {% for value, label in positions %}
-          <option value="{{ value }}">{{ label }}</option>
+          {% for position in positions %}
+          <option value="{{ position.id }}">{{ position.name }}</option>
           {% endfor %}
         </select>
 

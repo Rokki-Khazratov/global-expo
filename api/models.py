@@ -20,18 +20,6 @@ class ROLE_CHOISES(models.IntegerChoices):
     Visitor = 3, 'Visitor'
     NotGived = 4, 'Not gived'
 
-class POSITION_CHOICES(models.TextChoices):
-    DIRECTOR = 'DIR', 'Директор'
-    DEPUTY_DIRECTOR = 'DDIR', 'Заместитель директора'
-    HEAD_OF_DEPARTMENT = 'HOD', 'Начальник отдела'
-    MANAGER = 'MGR', 'Менеджер'
-    SENIOR_SPECIALIST = 'SSP', 'Ведущий специалист'
-    SPECIALIST = 'SPC', 'Специалист'
-    JUNIOR_SPECIALIST = 'JSP', 'Младший специалист'
-    INTERN = 'INT', 'Стажер'
-    STUDENT = 'STD', 'Студент'
-    OTHER = 'OTH', 'Другое'
-
 
 
 
@@ -43,15 +31,22 @@ class Company(models.Model):
     def __str__(self):
         return self.name
 
+class Position(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название должности")
+    code = models.CharField(max_length=20, unique=True, verbose_name="Код должности")
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Должность"
+        verbose_name_plural = "Должности"
+
 class Member(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ф. И. О.")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="Компания")
-    position = models.CharField(
-        max_length=4,
-        choices=POSITION_CHOICES.choices,
-        verbose_name="Должность",
-        default=POSITION_CHOICES.OTHER
-    )
+    position = models.ForeignKey(Position, on_delete=models.PROTECT, verbose_name="Должность")
     phone = models.CharField(max_length=15, verbose_name="Телефон")
     role = models.IntegerField(choices=ROLE_CHOISES.choices, default=3)
     qr_code = models.ImageField(upload_to='qr_codes/members/', blank=True, null=True)
