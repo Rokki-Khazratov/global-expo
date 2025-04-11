@@ -6,8 +6,12 @@
 6. QR code auto print idea --DONE
 7. All members GET page for admins --DONE
 
-8.Position as a Modle
-9.check security
-10.test with xprinter
+8.Position as a Modle --DONE
+9. check security 
+10. test with xprinter 
+11. new bg --DONE
+12. prepare to deploy
 
+ideas:
+role visitor as default choise in html
 P.S Feedbacks comment
