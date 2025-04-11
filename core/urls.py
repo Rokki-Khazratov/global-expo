@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('api.router')),  # Подключаем URL-ы из api.router
+    path('', include('api.router')),  # Подключаем URL-ы из api.router
 ]
 
 # Добавляем обработку медиа-файлов в режиме разработки

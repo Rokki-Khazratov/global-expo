@@ -1,0 +1,8 @@
+Django==5.0.2
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+Pillow==10.2.0  # для работы с изображениями и QR-кодами
+qrcode==7.4.2   # для генерации QR-кодов
+whitenoise==6.6.0  # для раздачи статических файлов
+python-dotenv==1.0.1  # для работы с .env файлами
+gunicorn==21.2.0  # для запуска на сервере 
