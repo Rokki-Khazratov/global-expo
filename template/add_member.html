@@ -9,10 +9,11 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        background-image: url("{% static 'images/fon-reg-cahrm.jpg' %}");
+        {% comment %} background-image: url("{% static 'images/fon-reg-charm.jpg' %}");
         background-size: cover;
         background-position: center;
-        background-repeat: no-repeat;
+        background-repeat: no-repeat; {% endcomment %}
+        background-color: #28282B; 
         margin: 0;
         padding: 0;
         height: 100vh;
@@ -49,7 +50,7 @@
       }
 
       h1 {
-        color: #4caf50;
+        color:  #1B1212 ;
         font-size: 28px;
         text-align: center;
         margin-bottom: 20px;
@@ -83,14 +84,14 @@
       }
 
       .company-select option[value="new"] {
-        color: #4caf50;
+        color:  #1B1212 ;
         font-weight: bold;
       }
 
       .new-company-input input {
         width: 100%;
         padding: 12px;
-        border: 1px solid #4caf50;
+        border: 1px solid  #1B1212 ;
         border-radius: 8px;
         font-size: 18px;
         margin-bottom: 0;
@@ -159,7 +160,7 @@
       }
 
       button {
-        background-color: #4caf50;
+        background-color:  #1B1212 ;
         color: white;
         padding: 15px;
         border: none;

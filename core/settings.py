@@ -32,17 +32,26 @@ INSTALLED_APPS = [
     'corsheaders',  # Add this line
 ]
 
+
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # 'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
-    'corsheaders.middleware.CorsMiddleware',  # Add this line
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'api.middleware.AuthenticationMiddleware',  # Наш middleware для аутентификации
 ]
+
+# Настройки аутентификации
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'members_list'
+LOGOUT_REDIRECT_URL = 'login' 
 
 ROOT_URLCONF = 'core.urls'
 

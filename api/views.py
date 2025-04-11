@@ -374,14 +374,26 @@ def view_qr_code(request, member_id):
     })
 
 def login_view(request):
+    # Если пользователь уже авторизован, перенаправляем на главную страницу
+    if request.user.is_authenticated:
+        return redirect('members_list')
+        
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        
+        if not username or not password:
+            return render(request, 'login.html', {
+                'error_message': 'Пожалуйста, заполните все поля'
+            })
+            
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             login(request, user)
-            return redirect('company_list')  # Redirect to company list after successful login
+            # Получаем URL для перенаправления из GET параметра next или используем members_list по умолчанию
+            next_url = request.GET.get('next', 'members_list')
+            return redirect(next_url)
         else:
             return render(request, 'login.html', {
                 'error_message': 'Неверное имя пользователя или пароль'
