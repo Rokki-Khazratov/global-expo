@@ -10,13 +10,52 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .header-title {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .header-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            transition: background-color 0.3s;
+        }
+
+        .header-link:hover {
+            background-color: #45a049;
         }
 
         .container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 20px auto;
             background-color: white;
             padding: 20px;
             border-radius: 10px;
@@ -160,6 +199,15 @@
     </style>
 </head>
 <body>
+    <header class="header">
+        <div class="header-container">
+            <h1 class="header-title">Список участников</h1>
+            <nav class="header-nav">
+                <a href="{% url 'add_member' %}" class="header-link">Добавить участника</a>
+            </nav>
+        </div>
+    </header>
+
     <div class="container">
         <h1>Список участников</h1>
         
